@@ -896,9 +896,9 @@ h1 {
     font-size: 0.9rem;
 }
 
+/* Hecho: el ✓ verde y el nombre en gris (sin tachar) */
 .habito.hecho .nombre {
     color: var(--suave);
-    text-decoration: line-through;
 }
 
 .acciones {
