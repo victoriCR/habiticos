@@ -108,6 +108,8 @@ def inicio(request):
             registro.deshacer_hasta if registro and registro.se_puede_deshacer() else None
         )
         habito.confirmado = habito.hecho and habito.deshacer_hasta is None
+        # Lo que explica el recuadro al tocar uno confirmado (igual que en el calendario)
+        habito.por_que_no = por_que_no_se_cambia(registro, True) if habito.confirmado else ""
         # Fuera de su franja no se puede marcar
         habito.bloqueado = not habito.hecho and not habito.en_franja(ahora.time())
 

@@ -38,4 +38,29 @@
             </ul>
         </section>
     {% endfor %}
+
+    {# Al tocar un habitico confirmado: por qué ya no se puede deshacer #}
+    <dialog class="dialogo" id="dialogo-confirmado" aria-labelledby="confirmado-titulo">
+        <h2 id="confirmado-titulo">{{ hoy|date:"l j \d\e F"|capfirst }}</h2>
+        <p class="suave" id="confirmado-nombre"></p>
+        <p id="confirmado-texto"></p>
+        <div class="acciones">
+            <button class="boton principal" type="button" id="confirmado-entendido">Entendido</button>
+        </div>
+    </dialog>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const dialogo = document.getElementById("dialogo-confirmado");
+        document.querySelectorAll(".habito.confirmado").forEach((boton) => {
+            boton.addEventListener("click", (evento) => {
+                evento.preventDefault();  // no se envía: solo se explica
+                document.getElementById("confirmado-nombre").textContent = boton.dataset.nombre;
+                document.getElementById("confirmado-texto").textContent = boton.dataset.mensaje;
+                dialogo.showModal();
+            });
+        });
+        document.getElementById("confirmado-entendido").addEventListener("click", () => dialogo.close());
+    </script>
 {% endblock %}

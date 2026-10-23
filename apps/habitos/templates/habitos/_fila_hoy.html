@@ -2,8 +2,8 @@
 <li>
     <form method="post" action="{% url 'marcar_habito' habito.pk %}">
         {% csrf_token %}
-        {# Confirmado (marcado hace más de 1 hora): queda fijo; si lo tocás, un aviso explica por qué #}
-        <button class="habito{% if habito.hecho %} hecho{% endif %}{% if habito.confirmado %} confirmado{% endif %}" type="submit" aria-pressed="{{ habito.hecho|yesno:'true,false' }}"{% if habito.bloqueado %} disabled{% endif %}>
+        {# Confirmado (marcado hace más de 1 hora): al tocarlo, un recuadro explica por qué (sin JavaScript, el servidor avisa) #}
+        <button class="habito{% if habito.hecho %} hecho{% endif %}{% if habito.confirmado %} confirmado{% endif %}"{% if habito.confirmado %} data-nombre="{{ habito.nombre }}" data-mensaje="{{ habito.por_que_no }}"{% endif %} type="submit" aria-pressed="{{ habito.hecho|yesno:'true,false' }}"{% if habito.bloqueado %} disabled{% endif %}>
             <span class="marca">{% if habito.hecho %}✓{% endif %}</span>
             <span class="nombre">{{ habito.nombre }}</span>
             {% if habito.hecho and habito.marcado_hoy %}

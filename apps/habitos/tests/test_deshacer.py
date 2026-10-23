@@ -55,10 +55,13 @@ class DeshacerDuranteLaPrimeraHoraTests(TestCase):
             html=True,
         )
 
-    def test_el_confirmado_no_esta_desactivado(self):
+    def test_el_confirmado_no_esta_desactivado_y_explica_por_que(self):
         self.marcar(13, 50)
         fila = self.hoy(14, 50).content.decode().split(CONFIRMADO)[1].split(">")[0]
         self.assertNotIn("disabled", fila)
+        self.assertIn('data-nombre="Leer"', fila)
+        self.assertIn('data-mensaje="✓ Marcado a las ', fila)
+        self.assertIn("Ya está confirmado: solo se puede cambiar o deshacer durante la primera hora.", fila)
 
     def test_los_registros_anteriores_a_esta_regla_cuentan_como_confirmados(self):
         registro = Registro.objects.create(habito=self.leer, fecha=timezone.localdate())
