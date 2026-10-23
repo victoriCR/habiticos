@@ -1498,3 +1498,131 @@ a.dato {
 .celda.informativa {
     cursor: help;
 }
+
+/* Comunidad: el feed y, a la derecha, Siguiendo / Seguidores */
+.comunidad-dos {
+    display: grid;
+    grid-template-columns: minmax(0, 560px) 280px;
+    gap: 40px;
+    align-items: start;
+    width: 100%;
+}
+
+.comunidad-dos .columna {
+    max-width: none;
+}
+
+.lado {
+    position: sticky;
+    top: 40px;
+    display: grid;
+    gap: 28px;
+}
+
+.lado h2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0 0 10px;
+    font-size: 0.95rem;
+}
+
+.lado h2 a {
+    color: var(--suave);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.lado ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lado li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mini-persona {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.mini-persona .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+}
+
+.mini-texto {
+    display: grid;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.mini-texto strong,
+.mini-texto span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.mini-texto strong {
+    font-size: 0.9rem;
+}
+
+.mini-texto span {
+    color: var(--suave);
+    font-size: 0.8rem;
+}
+
+.mini-boton {
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+/* La línea de cifras: solo cuando la columna no cabe */
+.cifras {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -4px 0 18px;
+}
+
+.cifras a,
+.cifras span {
+    padding: 6px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: var(--superficie);
+    color: var(--texto);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+@media (max-width: 1100px) {
+    .comunidad-dos {
+        display: block;
+        max-width: 560px;
+    }
+
+    .lado {
+        display: none;
+    }
+
+    .cifras {
+        display: flex;
+    }
+}

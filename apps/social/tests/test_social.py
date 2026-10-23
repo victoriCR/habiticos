@@ -189,3 +189,42 @@ class EliminarCuentaConDatosSocialesTests(TestCase):
         self.client.post("/perfil/eliminar-cuenta/", {"confirmacion": "eliminar"})
         self.assertFalse(Seguimiento.objects.exists())
         self.assertFalse(DiaCompartido.objects.exists())
+
+
+class ColumnaDeSeguimientosTests(TestCase):
+    def setUp(self):
+        self.ana = con_usuario("ana", first_name="Ana")
+        self.maria = con_usuario("maria", first_name="María")
+        self.sofia = con_usuario("sofia", first_name="Sofía")
+        Seguimiento.objects.create(seguidor=self.ana, seguido=self.maria)
+        Seguimiento.objects.create(seguidor=self.maria, seguido=self.ana)
+        Seguimiento.objects.create(seguidor=self.sofia, seguido=self.ana)
+        self.client.force_login(self.ana)
+
+    def lado(self):
+        """La columna de la derecha, tal como se ve."""
+        return self.client.get("/comunidad/").content.decode().split('<aside class="lado"')[1]
+
+    def test_muestra_cuantos_y_quienes(self):
+        respuesta = self.client.get("/comunidad/")
+        self.assertContains(respuesta, "Siguiendo (1)")
+        self.assertContains(respuesta, "Seguidores (2)")
+        self.assertContains(respuesta, "<strong>2</strong> seguidores")
+        self.assertContains(respuesta, 'href="/@ana/seguidores/"')
+        self.assertContains(respuesta, "@sofia")
+
+    def test_a_quien_te_sigue_y_no_seguis_le_ofrece_seguir(self):
+        seguidores = self.lado().split("Seguidores (")[1]
+        sofia = seguidores.split("@sofia</span>")[1].split("</li>")[0]
+        maria = seguidores.split("@maria</span>")[1].split("</li>")[0]
+        self.assertIn(">Seguir</button>", sofia)
+        self.assertIn("Siguiendo ✓", maria)
+
+    def test_primero_los_mas_recientes_y_solo_cinco(self):
+        for n in range(6):
+            Seguimiento.objects.create(seguidor=self.ana, seguido=con_usuario(f"p{n}"))
+        siguiendo = self.lado().split("Seguidores (")[0]
+        self.assertIn("Siguiendo (7)", siguiendo)
+        self.assertEqual(siguiendo.count('class="mini-persona"'), 5)
+        self.assertLess(siguiendo.index("@p5<"), siguiendo.index("@p4<"))
+        self.assertNotIn("@maria<", siguiendo)

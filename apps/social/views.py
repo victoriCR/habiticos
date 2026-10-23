@@ -20,6 +20,9 @@ from .models import FRASES, HITOS, Aviso, DiaCompartido, Reaccion, Seguimiento
 # La Comunidad muestra los días de las últimas dos semanas
 DIAS_EN_EL_FEED = 14
 
+# Cuántas personas muestra la columna de Seguidores / Siguiendo (el resto, en "Ver todos")
+PERSONAS_EN_LA_COLUMNA = 5
+
 
 # --- Ayudas ---
 
@@ -220,8 +223,34 @@ def comunidad(request):
             "frases": FRASES,
             "sigue_a_alguien": Seguimiento.objects.filter(seguidor=request.user).exists(),
             "tengo_usuario": bool(getattr(getattr(request.user, "perfil", None), "nombre_usuario", None)),
+            **resumen_de_seguimientos(request.user),
         },
     )
+
+
+def resumen_de_seguimientos(usuario):
+    """Para la columna de la Comunidad: cuántos seguidores y seguidos, y los más recientes.
+
+    Solo se listan quienes tienen @usuario (sin él no hay perfil al que llevar)."""
+    seguidos = (
+        Seguimiento.objects.filter(seguidor=usuario, seguido__perfil__nombre_usuario__isnull=False)
+        .select_related("seguido__perfil")
+        .prefetch_related("seguido__socialaccount_set")
+        .order_by("-creado")[:PERSONAS_EN_LA_COLUMNA]
+    )
+    seguidores = (
+        Seguimiento.objects.filter(seguido=usuario, seguidor__perfil__nombre_usuario__isnull=False)
+        .select_related("seguidor__perfil")
+        .prefetch_related("seguidor__socialaccount_set")
+        .order_by("-creado")[:PERSONAS_EN_LA_COLUMNA]
+    )
+    return {
+        "cuantos_sigo": Seguimiento.objects.filter(seguidor=usuario).count(),
+        "cuantos_me_siguen": Seguimiento.objects.filter(seguido=usuario).count(),
+        "ultimos_seguidos": con_foto([s.seguido for s in seguidos]),
+        # Con .sigo, para el botón "Seguir" a quien te sigue y vos no
+        "ultimos_seguidores": marcar_seguidos(usuario, con_foto([s.seguidor for s in seguidores])),
+    }
 
 
 def dia_visible(request, pk):

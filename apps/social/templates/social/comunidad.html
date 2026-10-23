@@ -3,6 +3,7 @@
 {% block titulo %}Comunidad · Habiticos{% endblock %}
 
 {% block contenido %}
+  <div class="comunidad-dos">
     <div class="columna">
         <header class="encabezado">
             <div>
@@ -16,6 +17,17 @@
                 <a class="boton editar-perfil" href="{% url 'buscar' %}">🔍 Buscar</a>
             </div>
         </header>
+
+        {# En pantallas angostas, en lugar de la columna: cuántos seguidores y seguidos #}
+        <nav class="cifras" aria-label="Seguidores y seguidos">
+            {% if tengo_usuario %}
+                <a href="{% url 'seguidores' user.perfil.nombre_usuario %}">👥 <strong>{{ cuantos_me_siguen }}</strong> seguidor{{ cuantos_me_siguen|pluralize:"es" }}</a>
+                <a href="{% url 'siguiendo' user.perfil.nombre_usuario %}"><strong>{{ cuantos_sigo }}</strong> siguiendo</a>
+            {% else %}
+                <span>👥 <strong>{{ cuantos_me_siguen }}</strong> seguidor{{ cuantos_me_siguen|pluralize:"es" }}</span>
+                <span><strong>{{ cuantos_sigo }}</strong> siguiendo</span>
+            {% endif %}
+        </nav>
 
         {% if not tengo_usuario %}
             <div class="vacio-grupo">
@@ -35,4 +47,35 @@
             </div>
         {% endfor %}
     </div>
+
+    {# En computadora: las personas más recientes, a la derecha del feed #}
+    <aside class="lado" aria-label="Seguidores y seguidos">
+        <section>
+            <h2>
+                Siguiendo ({{ cuantos_sigo }})
+                {% if tengo_usuario and cuantos_sigo %}<a href="{% url 'siguiendo' user.perfil.nombre_usuario %}">Ver todos</a>{% endif %}
+            </h2>
+            <ul>
+                {% for p in ultimos_seguidos %}
+                    {% include "social/_persona_mini.html" with con_boton=False %}
+                {% empty %}
+                    <li class="suave-chico">Todavía no seguís a nadie. <a href="{% url 'buscar' %}">Buscar →</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+        <section>
+            <h2>
+                Seguidores ({{ cuantos_me_siguen }})
+                {% if tengo_usuario and cuantos_me_siguen %}<a href="{% url 'seguidores' user.perfil.nombre_usuario %}">Ver todos</a>{% endif %}
+            </h2>
+            <ul>
+                {% for p in ultimos_seguidores %}
+                    {% include "social/_persona_mini.html" with con_boton=True %}
+                {% empty %}
+                    <li class="suave-chico">Todavía nadie te sigue.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </aside>
+  </div>
 {% endblock %}
