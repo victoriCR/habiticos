@@ -372,11 +372,38 @@ button.celda {
         flex: 1;
     }
 
+    /* Los enlaces no caben en una fila: la franja se desliza con el dedo
+       (como pestañas) en lugar de ensanchar toda la página */
     .nav {
         order: 3;
         display: flex;
         width: 100%;
         margin-top: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav a {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* En una fila de habitico, el horario y la racha bajan de línea si no caben */
+    .habito {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+
+    /* …y los textos largos (como "Se borrará el 22 de noviembre de 2026, 4:14 a.m.")
+       se parten en vez de empujar los botones fuera de la pantalla */
+    .habito .racha,
+    .habito .franja,
+    .habito .hora {
+        white-space: normal;
     }
 }
 
