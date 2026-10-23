@@ -11,6 +11,18 @@ databases:
     region: virginia  # la región de Render más cercana a Costa Rica
     postgresMajorVersion: "17"
 
+# Variables que comparten la app web y la tarea diaria (un solo lugar para los secretos)
+envVarGroups:
+  - name: habiticos-comun
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true  # Render inventa una clave larga y aleatoria
+      # Secretos de Google: Render los pide al crear el Blueprint (no van en el código)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
 services:
   # La app web
   - type: web
@@ -32,17 +44,11 @@ services:
         fromDatabase:
           name: habiticos-db
           property: connectionString
-      - key: SECRET_KEY
-        generateValue: true  # Render inventa una clave larga y aleatoria
+      - fromGroup: habiticos-comun
       - key: ALLOWED_HOSTS
         value: habiticos.com,www.habiticos.com
       - key: CSRF_TRUSTED_ORIGINS
         value: https://habiticos.com,https://www.habiticos.com
-      # Secretos de Google: Render los pide al crear el Blueprint (no van en el código)
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
 
   # La tarea diaria: vaciar la papelera de todo el mundo
   - type: cron
@@ -61,19 +67,5 @@ services:
         fromDatabase:
           name: habiticos-db
           property: connectionString
-      # La tarea usa la misma configuración que la app web
-      - key: SECRET_KEY
-        fromService:
-          type: web
-          name: habiticos
-          envVarKey: SECRET_KEY
-      - key: GOOGLE_CLIENT_ID
-        fromService:
-          type: web
-          name: habiticos
-          envVarKey: GOOGLE_CLIENT_ID
-      - key: GOOGLE_CLIENT_SECRET
-        fromService:
-          type: web
-          name: habiticos
-          envVarKey: GOOGLE_CLIENT_SECRET
+      # La tarea usa los mismos secretos que la app web
+      - fromGroup: habiticos-comun
