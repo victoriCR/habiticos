@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block titulo %}Política de privacidad · Habiticos{% endblock %}
+{% block clase_main %}lectura{% endblock %}
+
+{% block contenido %}
+    <article class="legal">
+        <h1>Política de privacidad</h1>
+        <p class="suave">Última actualización: 23 de octubre de 2026</p>
+
+        <p>
+            Habiticos es una app gratuita para construir habiticos, un día a la vez.
+            Esta política explica, en palabras simples, qué datos guardamos, para qué y qué
+            podés hacer con ellos. Se rige por la Ley de Protección de la Persona frente al
+            Tratamiento de sus Datos Personales de Costa Rica (Ley N.º 8968).
+        </p>
+
+        <h2>Quién es responsable de tus datos</h2>
+        <p>
+            Habiticos es un proyecto personal de Victori Murillo, en Costa Rica.
+            {% if contacto %}Podés escribir a <a href="mailto:{{ contacto }}">{{ contacto }}</a> por cualquier consulta sobre tus datos.{% endif %}
+        </p>
+
+        <h2>Qué datos guardamos</h2>
+        <p><strong>De tu cuenta de Google</strong>, cuando entrás con «Continuar con Google»:</p>
+        <ul>
+            <li>tu nombre y apellido;</li>
+            <li>tu correo electrónico;</li>
+            <li>la dirección de tu foto de perfil;</li>
+            <li>un identificador que Google asigna a tu cuenta.</li>
+        </ul>
+        <p>
+            No recibimos tu contraseña de Google ni guardamos permisos para acceder a tu
+            cuenta, tu correo, tus contactos ni ningún otro servicio de Google.
+        </p>
+        <p><strong>Lo que creás en Habiticos:</strong></p>
+        <ul>
+            <li>tus habiticos (nombre, descripción, horario permitido y si son públicos o privados);</li>
+            <li>los días y la hora en que marcás cada habitico como cumplido;</li>
+            <li>las identidades que elegís y su orden;</li>
+            <li>tu @usuario y tu frase de perfil.</li>
+        </ul>
+        <p>
+            <strong>Datos técnicos:</strong> cookies necesarias para mantener tu sesión
+            iniciada (hasta la medianoche) y proteger los formularios. No usamos cookies de
+            publicidad ni de análisis, y no te rastreamos en otros sitios.
+        </p>
+
+        <h2>Para qué los usamos</h2>
+        <ul>
+            <li>Para que puedas iniciar sesión y usar la app.</li>
+            <li>Para calcular tus rachas, tu constancia y tus votos por identidad.</li>
+            <li>Para mostrar en tu perfil los habiticos que marques como públicos.</li>
+        </ul>
+        <p>No vendemos tus datos ni los usamos para publicidad.</p>
+
+        <h2>Quién más puede verlos</h2>
+        <ul>
+            <li>
+                <strong>Tus habiticos privados</strong> (todos lo son por defecto) solo los ves vos.
+            </li>
+            <li>
+                <strong>Lo que marques como público</strong> (habiticos públicos, tu nombre, tu foto,
+                tu @usuario, tu frase y tus identidades) puede mostrarse en tu perfil a otras
+                personas de Habiticos. Tu correo electrónico nunca se muestra.
+            </li>
+            <li>
+                <strong>Proveedores:</strong> la app y la base de datos funcionan en
+                <a href="https://render.com/privacy" rel="noopener">Render</a>, con servidores en
+                Estados Unidos, y el inicio de sesión lo hace
+                <a href="https://policies.google.com/privacy" rel="noopener">Google</a>. Solo
+                procesan los datos para prestar ese servicio.
+            </li>
+        </ul>
+
+        <h2>Cuánto tiempo los guardamos</h2>
+        <ul>
+            <li>Mientras tengas tu cuenta.</li>
+            <li>
+                Un habitico que eliminás pasa a «Eliminados recientemente» y se borra para
+                siempre a los 30 días (antes podés recuperarlo).
+            </li>
+            <li>
+                Si eliminás tu cuenta, todos tus datos se borran en ese momento. Las copias de
+                seguridad de la base de datos pueden conservarlos unos días más, hasta que se
+                renuevan.
+            </li>
+        </ul>
+
+        <h2>Tus derechos</h2>
+        <p>
+            Podés ver, corregir y eliminar tus datos en cualquier momento: tus habiticos y tu
+            perfil se editan desde la app, y desde
+            <a href="{% url 'eliminar_cuenta' %}">Eliminar mi cuenta</a> podés borrar todo de una vez.
+            {% if contacto %}Para cualquier otra solicitud, escribí a <a href="mailto:{{ contacto }}">{{ contacto }}</a>.{% endif %}
+        </p>
+        <p>
+            También podés quitarle a Habiticos el acceso a tu cuenta de Google desde
+            <a href="https://myaccount.google.com/permissions" rel="noopener">tu cuenta de Google</a>.
+        </p>
+
+        <h2>Menores de edad</h2>
+        <p>
+            Habiticos no está pensada para menores de 13 años. Si sos menor de edad, usala con
+            el permiso de una persona adulta responsable.
+        </p>
+
+        <h2>Cambios en esta política</h2>
+        <p>
+            Si cambiamos algo importante (por ejemplo, al sumar funciones sociales), vamos a
+            actualizar esta página y la fecha de arriba.
+        </p>
+
+        <p class="suave legal-otros"><a href="{% url 'terminos' %}">Términos de uso</a></p>
+    </article>
+{% endblock %}

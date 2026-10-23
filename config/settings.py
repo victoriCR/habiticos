@@ -204,6 +204,9 @@ ACCOUNT_EMAIL_VERIFICATION = "none"  # Google ya verifica el email
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 
+# Correo de contacto que aparece en Privacidad y Términos (vacío: no se muestra)
+CONTACTO_EMAIL = os.environ.get("CONTACTO_EMAIL", "")
+
 
 # Producción (solo con DEBUG apagado): todo por https
 if not DEBUG:

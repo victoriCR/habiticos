@@ -31,15 +31,18 @@
                         </nav>
                     {% endwith %}
                 </div>
-                <form method="post" action="{% url 'account_logout' %}">
-                    {% csrf_token %}
-                    <button class="boton" type="submit">Cerrar sesión</button>
-                </form>
+                <div class="barra-abajo">
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        <button class="boton" type="submit">Cerrar sesión</button>
+                    </form>
+                    <p class="pie-legal"><a href="{% url 'privacidad' %}">Privacidad</a> · <a href="{% url 'terminos' %}">Términos</a></p>
+                </div>
             </aside>
         {% endwith %}
     {% endif %}
     <div class="contenido">
-        <main>
+        <main class="{% block clase_main %}{% endblock %}">
             {% for mensaje in messages %}
                 {# Solo errores; los avisos de allauth ("Has iniciado sesión…") se descartan #}
                 {% if mensaje.level_tag == "error" %}

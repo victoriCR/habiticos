@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block titulo %}Eliminar mi cuenta · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <h1>Eliminar mi cuenta</h1>
+        <p class="suave">Esto borra tu cuenta de Habiticos para siempre. No se puede deshacer.</p>
+
+        <div class="aviso aviso-peligro">
+            <p><strong>Se va a borrar todo:</strong></p>
+            <ul>
+                <li>{{ habiticos }} habitico{{ habiticos|pluralize }}, incluidos los archivados y los de la papelera;</li>
+                <li>{{ dias }} día{{ dias|pluralize }} cumplido{{ dias|pluralize }}, con sus rachas y votos;</li>
+                <li>tus identidades elegidas, tu @usuario y tu frase.</li>
+            </ul>
+            <p>Si después volvés a entrar con Google, empezás de cero con una cuenta nueva.</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="campo">
+                <label for="confirmacion">Para confirmar, escribí «{{ palabra }}»</label>
+                <input type="text" id="confirmacion" name="confirmacion" autocomplete="off" autocapitalize="none" required>
+            </div>
+            <div class="acciones">
+                <button class="boton peligro" type="submit">Eliminar mi cuenta para siempre</button>
+                <a class="boton" href="{% url 'editar_perfil' %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

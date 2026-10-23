@@ -953,3 +953,62 @@ h1 {
     border: 1px solid var(--error);
     border-radius: 10px;
 }
+
+/* Páginas para leer (Privacidad, Términos): una columna cómoda, también con la barra */
+.contenido main.lectura {
+    max-width: 680px;
+}
+
+.legal h2 {
+    margin: 32px 0 8px;
+    font-size: 1.1rem;
+}
+
+.legal p,
+.legal li {
+    line-height: 1.65;
+}
+
+.legal ul {
+    padding-left: 20px;
+}
+
+.legal a,
+.pie-legal a,
+.aviso a {
+    color: var(--texto);
+}
+
+.legal-otros {
+    margin-top: 40px;
+}
+
+/* Enlaces legales: al pie de la barra y debajo del botón de Google */
+.pie-legal {
+    margin: 12px 0 0;
+    color: var(--suave);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.pie-legal a {
+    color: var(--suave);
+}
+
+/* Recuadro rojo de "Eliminar mi cuenta" */
+.aviso-peligro {
+    margin-bottom: 24px;
+    background: var(--superficie);
+}
+
+.aviso-peligro p,
+.aviso-peligro ul {
+    margin: 0 0 8px;
+}
+
+@media (max-width: 720px) {
+    /* En el móvil la barra es una franja: los enlaces legales no caben */
+    .barra .pie-legal {
+        display: none;
+    }
+}

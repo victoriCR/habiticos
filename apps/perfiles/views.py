@@ -1,10 +1,12 @@
 from collections import defaultdict
 
+from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from apps.habitos.models import Registro
+from apps.habitos.models import Habito, Registro
 from apps.habitos.rachas import constancia, dias_en_la_semana, mejor_racha
 from apps.habitos.views import en_orden_de_identidades
 
@@ -56,3 +58,42 @@ def editar_perfil(request):
         form.save()
         return redirect("perfil")
     return render(request, "perfiles/perfil_formulario.html", {"form": form})
+
+
+# Palabra que hay que escribir para confirmar (así nadie borra su cuenta por un clic)
+PALABRA_PARA_ELIMINAR = "eliminar"
+
+
+@login_required
+def eliminar_cuenta(request):
+    """Borra la cuenta y todos sus datos para siempre, después de confirmar."""
+    if request.user.is_superuser:
+        # Una cuenta de administración no se borra desde aquí (evita quedarse sin admin)
+        messages.error(request, "Las cuentas de administración se eliminan desde /admin/.")
+        return redirect("editar_perfil")
+
+    if request.method == "POST":
+        if request.POST.get("confirmacion", "").strip().lower() != PALABRA_PARA_ELIMINAR:
+            messages.error(request, f"Escribí «{PALABRA_PARA_ELIMINAR}» para confirmar.")
+            return redirect("eliminar_cuenta")
+        usuario = request.user
+        logout(request)
+        # Se borra en cascada: perfil, habiticos (también los de la papelera),
+        # registros, identidades elegidas y la conexión con Google
+        usuario.delete()
+        return redirect("cuenta_eliminada")
+
+    return render(
+        request,
+        "perfiles/eliminar_cuenta.html",
+        {
+            "habiticos": Habito.todos.filter(usuario=request.user).count(),
+            "dias": Registro.objects.filter(habito__usuario=request.user).count(),
+            "palabra": PALABRA_PARA_ELIMINAR,
+        },
+    )
+
+
+def cuenta_eliminada(request):
+    """Pública: ya no hay sesión."""
+    return render(request, "perfiles/cuenta_eliminada.html")

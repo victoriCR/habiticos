@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cuenta eliminada · Habiticos{% endblock %}
+
+{% block contenido %}
+    <h1>Tu cuenta fue eliminada</h1>
+    <p class="suave">Borramos tu cuenta y todos tus datos. Gracias por haber construido tus habiticos con nosotros. 🌱</p>
+    <p class="suave">
+        Si querés, también podés quitarle a Habiticos el acceso a tu cuenta de Google desde
+        <a href="https://myaccount.google.com/permissions" rel="noopener">tu cuenta de Google</a>.
+    </p>
+    <div class="acciones">
+        <a class="boton" href="{% url 'account_login' %}">Volver al inicio</a>
+    </div>
+{% endblock %}

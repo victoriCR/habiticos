@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block titulo %}Términos de uso · Habiticos{% endblock %}
+{% block clase_main %}lectura{% endblock %}
+
+{% block contenido %}
+    <article class="legal">
+        <h1>Términos de uso</h1>
+        <p class="suave">Última actualización: 23 de octubre de 2026</p>
+
+        <p>
+            Al usar Habiticos aceptás estos términos. Son cortos y en lenguaje simple: si algo
+            no te queda claro, preguntanos{% if contacto %} en <a href="mailto:{{ contacto }}">{{ contacto }}</a>{% endif %}.
+        </p>
+
+        <h2>El servicio</h2>
+        <p>
+            Habiticos es una app gratuita para registrar tus habiticos, ver tus rachas y construir las
+            identidades que elegís. Es un proyecto personal de Victori Murillo, en Costa Rica, y
+            puede cambiar, mejorar o, en algún momento, dejar de existir.
+        </p>
+
+        <h2>Tu cuenta</h2>
+        <ul>
+            <li>Entrás con tu cuenta de Google; la seguridad de esa cuenta es tu responsabilidad.</li>
+            <li>Tu @usuario tiene que ser tuyo: no te hagas pasar por otra persona.</li>
+            <li>Podés eliminar tu cuenta cuando quieras desde «Editar perfil».</li>
+        </ul>
+
+        <h2>Uso aceptable</h2>
+        <p>No uses Habiticos para:</p>
+        <ul>
+            <li>publicar contenido ofensivo, discriminatorio, violento o ilegal (por ejemplo, en el nombre de un habitico público o en tu frase);</li>
+            <li>molestar o acosar a otras personas;</li>
+            <li>intentar entrar a cuentas ajenas, saturar el servicio o usarlo de forma automatizada.</li>
+        </ul>
+        <p>Podemos suspender o eliminar cuentas que no respeten estas reglas.</p>
+
+        <h2>No es un consejo profesional</h2>
+        <p>
+            Habiticos te ayuda a llevar la cuenta de tus habiticos, pero no da consejos médicos,
+            psicológicos, nutricionales ni financieros. Ante cualquier duda de salud, consultá con
+            un profesional.
+        </p>
+
+        <h2>Tu contenido</h2>
+        <p>
+            Lo que creás en Habiticos es tuyo. Nos das permiso para guardarlo y mostrarlo dentro
+            de la app según lo que elijas (por ejemplo, tus habiticos públicos en tu perfil). La
+            <a href="{% url 'privacidad' %}">Política de privacidad</a> explica qué datos guardamos.
+        </p>
+
+        <h2>Garantías y responsabilidad</h2>
+        <p>
+            Hacemos lo posible para que Habiticos funcione bien y tus datos estén seguros, pero el
+            servicio se ofrece «tal cual», sin garantías de que esté siempre disponible o libre de
+            errores. En la medida que permita la ley, no somos responsables por pérdidas derivadas
+            del uso de la app.
+        </p>
+
+        <h2>Cambios y ley aplicable</h2>
+        <p>
+            Si cambiamos estos términos, vamos a actualizar esta página y la fecha de arriba.
+            Se rigen por las leyes de la República de Costa Rica.
+        </p>
+
+        <p class="suave legal-otros"><a href="{% url 'privacidad' %}">Política de privacidad</a></p>
+    </article>
+{% endblock %}
