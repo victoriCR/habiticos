@@ -30,12 +30,13 @@ class BarraLateralTests(TestCase):
         self.client.force_login(usuaria)
 
         respuesta = self.client.get("/")
-        self.assertContains(respuesta, 'href="/" aria-current="page">Mis habiticos')
-        self.assertContains(respuesta, 'href="/archivados/">Archivados')
+        self.assertContains(respuesta, 'href="/" aria-current="page">Hoy')
+        self.assertContains(respuesta, 'href="/mis-habiticos/">Mis habiticos')
 
+        # Archivados está dentro de "Mis habiticos": resalta esa sección
         respuesta = self.client.get("/archivados/")
-        self.assertContains(respuesta, 'href="/">Mis habiticos')
-        self.assertContains(respuesta, 'href="/archivados/" aria-current="page">Archivados')
+        self.assertContains(respuesta, 'href="/">Hoy')
+        self.assertContains(respuesta, 'href="/mis-habiticos/" aria-current="page">Mis habiticos')
 
 
 class RachaEnPaginasTests(TestCase):
@@ -124,8 +125,10 @@ class GruposPorIdentidadTests(TestCase):
 
     def test_una_identidad_sin_habitos_invita_a_agregar_uno(self):
         Habito.objects.filter(identidad=self.activa).delete()
-        respuesta = self.client.get("/")
+        # En "Mis habiticos" (organizar); "Hoy" no muestra grupos vacíos
+        respuesta = self.client.get("/mis-habiticos/")
         self.assertContains(respuesta, f"/nuevo/?identidad={self.activa.pk}")
+        self.assertNotContains(self.client.get("/"), "Soy una persona activa")
 
     def test_el_calendario_usa_el_mismo_orden_que_mis_habitos(self):
         # Leer (sin identidad) se creó último pero se arrastra al principio:

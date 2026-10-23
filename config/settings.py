@@ -96,6 +96,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "config.pwa.contexto",  # pwa_activa: service worker solo en producción
+                "config.navegacion.seccion",  # qué sección resaltar en la navegación
             ],
         },
     },

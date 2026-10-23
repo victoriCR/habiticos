@@ -106,14 +106,12 @@ def inicio(request):
         # Fuera de su franja no se puede marcar (pero sí desmarcar)
         habito.bloqueado = not habito.hecho and not habito.en_franja(ahora.time())
 
-    # Un grupo por identidad elegida (en su orden) y "Otros hábitos" al final.
-    # Cada hábito cumplido es un voto por esa identidad (James Clear).
-    elegidas = [e.identidad for e in request.user.identidades_elegidas.select_related("identidad")]
+    # Cada hábito cumplido es un voto por su identidad (James Clear)
     lunes = hoy - timedelta(days=hoy.weekday())
     votos = dict(
         Registro.objects.filter(
             habito__usuario=request.user,
-            habito__identidad__in=elegidas,
+            habito__identidad__isnull=False,
             # Esta consulta no pasa por Habito.objects: hay que excluir a mano los eliminados
             habito__eliminado__isnull=True,
             fecha__range=(lunes, hoy),
@@ -121,28 +119,59 @@ def inicio(request):
         .values_list("habito__identidad")
         .annotate(total=Count("pk"))
     )
+    # "Hoy" es para marcar: solo las identidades que tienen habiticos
+    grupos, hay_identidades = agrupar_por_identidad(request.user, habitos, votos=votos)
+    grupos = [grupo for grupo in grupos if grupo["habitos"]]
+
+    return render(
+        request,
+        "habitos/hoy.html",
+        {
+            "grupos": grupos,
+            "hay_identidades": hay_identidades,
+            "hoy": hoy,
+            "total": len(habitos),
+            "hechos": sum(habito.hecho for habito in habitos),
+        },
+    )
+
+
+@login_required
+def mis_habiticos(request):
+    """Organizar: crear, ordenar, editar y archivar (sin marcar)."""
+    habitos = rachas_activas(request.user)
+    grupos, hay_identidades = agrupar_por_identidad(request.user, habitos)
+    return render(
+        request,
+        "habitos/mis_habiticos.html",
+        {
+            "grupos": grupos,
+            "hay_identidades": hay_identidades,
+            "sumar_bloqueado": bool(por_consolidar(habitos)),
+            "archivados": request.user.habitos.filter(activo=False).count(),
+        },
+    )
+
+
+def agrupar_por_identidad(usuario, habitos, votos=None):
+    """Un grupo por identidad elegida (en su orden) y "Otros habiticos" al final.
+
+    Cada grupo es {"identidad", "habitos", "votos"}. Un hábito cuya identidad ya no
+    está elegida también va a "Otros". Devuelve (grupos, hay_identidades).
+    """
+    votos = votos or {}
+    elegidas = [e.identidad for e in usuario.identidades_elegidas.select_related("identidad")]
     grupos = [
         {"identidad": identidad, "votos": votos.get(identidad.pk, 0), "habitos": []}
         for identidad in elegidas
     ]
     por_identidad = {grupo["identidad"].pk: grupo for grupo in grupos}
-    otros = {"identidad": None, "habitos": []}
+    otros = {"identidad": None, "votos": 0, "habitos": []}
     for habito in habitos:
-        # Un hábito cuya identidad ya no está elegida también va a "Otros"
         por_identidad.get(habito.identidad_id, otros)["habitos"].append(habito)
     if otros["habitos"] or not grupos:
         grupos.append(otros)
-
-    return render(
-        request,
-        "habitos/inicio.html",
-        {
-            "grupos": grupos,
-            "hay_identidades": bool(elegidas),
-            "hoy": hoy,
-            "sumar_bloqueado": bool(por_consolidar(habitos)),
-        },
-    )
+    return grupos, bool(elegidas)
 
 
 @login_required
@@ -160,7 +189,7 @@ def crear_habito(request):
             habito.usuario = request.user
             habito.orden = ultimo_lugar(request.user.habitos)
             habito.save()
-            return redirect("inicio")
+            return redirect("mis_habiticos")
     else:
         # Desde un grupo vacío de "Mis hábitos" llega con ?identidad=<id>
         form = HabitoForm(
@@ -180,7 +209,7 @@ def editar_habito(request, pk):
         form = HabitoForm(request.POST, instance=habito, usuario=request.user)
         if form.is_valid():
             form.save()
-            return redirect("inicio" if habito.activo else "archivados")
+            return redirect("mis_habiticos" if habito.activo else "archivados")
     else:
         form = HabitoForm(instance=habito, usuario=request.user)
 
@@ -203,7 +232,7 @@ def archivar_habito(request, pk):
     habito = get_object_or_404(Habito, pk=pk, usuario=request.user)
     habito.activo = False
     habito.save(update_fields=["activo"])
-    return redirect("inicio")
+    return redirect("mis_habiticos")
 
 
 @login_required(redirect_field_name=None)  # sin ?next=: tras el login, a inicio
@@ -219,7 +248,7 @@ def restaurar_habito(request, pk):
     habito.activo = True
     habito.orden = ultimo_lugar(request.user.habitos)
     habito.save(update_fields=["activo", "orden"])
-    return redirect("inicio")
+    return redirect("mis_habiticos")
 
 
 @login_required

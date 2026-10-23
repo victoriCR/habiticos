@@ -77,6 +77,8 @@ class EliminarHabiticoTests(TestCase):
         IdentidadElegida.objects.create(usuario=self.usuaria, identidad=identidad)
         self.habito.identidad = identidad
         self.habito.save()
+        # Otro habitico activo de esa identidad, para que su grupo se vea en "Hoy"
+        Habito.objects.create(usuario=self.usuaria, nombre="Otro", identidad=identidad)
         self.eliminar()
         self.assertContains(self.client.get("/"), "🗳️ 0 votos esta semana")
 

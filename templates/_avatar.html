@@ -1,0 +1,6 @@
+{# La foto de Google, o la inicial si no hay. Necesita "foto" y "nombre" en el contexto #}
+{% if foto %}
+    <img class="avatar" src="{{ foto }}" alt="" referrerpolicy="no-referrer">
+{% else %}
+    <span class="avatar" aria-hidden="true">{{ nombre|first|upper }}</span>
+{% endif %}

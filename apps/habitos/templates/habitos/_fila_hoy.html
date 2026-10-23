@@ -1,0 +1,19 @@
+{# "Hoy": la fila solo sirve para marcar o desmarcar #}
+<li>
+    <form method="post" action="{% url 'marcar_habito' habito.pk %}">
+        {% csrf_token %}
+        <button class="habito{% if habito.hecho %} hecho{% endif %}" type="submit" aria-pressed="{{ habito.hecho|yesno:'true,false' }}"{% if habito.bloqueado %} disabled{% endif %}>
+            <span class="marca">{% if habito.hecho %}✓{% endif %}</span>
+            <span class="nombre">{{ habito.nombre }}</span>
+            {% if habito.hecho and habito.marcado_hoy %}
+                <span class="hora">{{ habito.marcado_hoy|date:"g:i a" }}</span>
+            {% endif %}
+            {% if habito.tiene_franja and not habito.hecho %}
+                <span class="franja" title="Solo se puede marcar en este horario">🕐 {{ habito.hora_desde|time:"g:i a" }} – {{ habito.hora_hasta|time:"g:i a" }}</span>
+            {% endif %}
+            {% if habito.racha %}
+                <span class="racha" title="Racha: {{ habito.racha }} día{{ habito.racha|pluralize }} seguido{{ habito.racha|pluralize }}">🔥 {{ habito.racha }}</span>
+            {% endif %}
+        </button>
+    </form>
+</li>

@@ -28,14 +28,14 @@ class SumarHabiticosTests(TestCase):
     def test_con_todos_en_7_se_puede_crear(self):
         self.crear_con_racha("Agua", 7)
         self.crear_con_racha("Leer", 10)
-        self.assertContains(self.client.get("/"), "+ Nuevo habitico")
+        self.assertContains(self.client.get("/mis-habiticos/"), "+ Nuevo habitico")
         self.client.post("/nuevo/", {"nombre": "Gym"})
         self.assertTrue(Habito.objects.filter(nombre="Gym").exists())
 
     def test_si_uno_no_llega_explica_y_no_crea(self):
         self.crear_con_racha("Agua", 7)
         self.crear_con_racha("Leer", 4)
-        self.assertContains(self.client.get("/"), "🔒 Nuevo habitico")
+        self.assertContains(self.client.get("/mis-habiticos/"), "🔒 Nuevo habitico")
 
         respuesta = self.client.get("/nuevo/")
         self.assertContains(respuesta, "Todavía no es momento")

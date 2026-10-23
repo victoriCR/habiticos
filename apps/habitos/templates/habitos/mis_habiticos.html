@@ -7,7 +7,7 @@
     <header class="encabezado">
         <div>
             <h1>Mis habiticos</h1>
-            <p class="suave">Hoy, {{ hoy|date:"l j \d\e F \d\e Y" }}</p>
+            <p class="suave">Creá, ordená y editá tus habiticos.</p>
         </div>
         {% if sumar_bloqueado %}
             {# Bloqueo suave: lleva a la explicación (y desde ahí se puede crear igual) #}
@@ -23,7 +23,6 @@
                 {% if grupo.identidad %}
                     <header class="grupo-encabezado">
                         <h2>{{ grupo.identidad.emoji }} {{ grupo.identidad.nombre }}</h2>
-                        <span class="votos" title="Cada habitico cumplido es un voto por la persona que querés ser">🗳️ {{ grupo.votos }} voto{{ grupo.votos|pluralize }} esta semana</span>
                     </header>
                 {% elif hay_identidades %}
                     <header class="grupo-encabezado">
@@ -48,6 +47,10 @@
             </section>
         {% endfor %}
     </div>
+
+    <p class="pie-seccion">
+        <a href="{% url 'archivados' %}">📦 Archivados{% if archivados %} ({{ archivados }}){% endif %} →</a>
+    </p>
 {% endblock %}
 
 {% block scripts %}

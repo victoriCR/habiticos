@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block titulo %}Hoy · Habiticos{% endblock %}
+
+{% block contenido %}
+    <header class="encabezado">
+        <div>
+            <h1>Hoy</h1>
+            <p class="suave">
+                {{ hoy|date:"l j \d\e F"|capfirst }}{% if total %} · {{ hechos }} de {{ total }} hecho{{ total|pluralize }}{% if hechos == total %} 🎉{% else %} 🌱{% endif %}{% endif %}
+            </p>
+        </div>
+    </header>
+
+    {% if not total %}
+        <div class="vacio-grupo">
+            Todavía no tenés habiticos.
+            <a href="{% url 'mis_habiticos' %}">Creá el primero en Mis habiticos →</a>
+        </div>
+    {% endif %}
+
+    {% for grupo in grupos %}
+        <section class="grupo">
+            {% if grupo.identidad %}
+                <header class="grupo-encabezado">
+                    <h2>{{ grupo.identidad.emoji }} {{ grupo.identidad.nombre }}</h2>
+                    <span class="votos" title="Cada habitico cumplido es un voto por la persona que querés ser">🗳️ {{ grupo.votos }} voto{{ grupo.votos|pluralize }} esta semana</span>
+                </header>
+            {% elif hay_identidades %}
+                <header class="grupo-encabezado">
+                    <h2>Otros habiticos</h2>
+                </header>
+            {% endif %}
+            <ul class="habitos">
+                {% for habito in grupo.habitos %}
+                    {% include "habitos/_fila_hoy.html" %}
+                {% endfor %}
+            </ul>
+        </section>
+    {% endfor %}
+{% endblock %}

@@ -3,7 +3,8 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {# viewport-fit=cover: en el iPhone, respetar la zona de la barrita de inicio (abajo) #}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{% block titulo %}Habiticos{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/habiticos.css' %}">
 
@@ -22,29 +23,24 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
-<body data-pwa="{{ pwa_activa|yesno:'activa,inactiva' }}">
+<body data-pwa="{{ pwa_activa|yesno:'activa,inactiva' }}"{% if user.is_authenticated %} class="con-sesion"{% endif %}>
     {% if user.is_authenticated %}
         {% get_social_accounts user as cuentas %}
         {% with foto=cuentas.google.0.get_avatar_url nombre=user.get_full_name|default:user.email %}
+            {# Computadora: barra lateral con todas las secciones #}
             <aside class="barra">
                 <div class="barra-arriba">
-                    <div class="perfil">
-                        {% if foto %}
-                            <img class="avatar" src="{{ foto }}" alt="" referrerpolicy="no-referrer">
-                        {% else %}
-                            <span class="avatar" aria-hidden="true">{{ nombre|first|upper }}</span>
-                        {% endif %}
+                    <a class="perfil" href="{% url 'perfil' %}">
+                        {% include "_avatar.html" %}
                         <span class="perfil-nombre">{{ nombre }}</span>
-                    </div>
-                    {% with actual=request.resolver_match.url_name %}
-                        <nav class="nav">
-                            <a href="{% url 'inicio' %}"{% if actual == "inicio" %} aria-current="page"{% endif %}>Mis habiticos</a>
-                            <a href="{% url 'identidades' %}"{% if actual == "identidades" %} aria-current="page"{% endif %}>Identidades</a>
-                            <a href="{% url 'calendario' %}"{% if actual == "calendario" %} aria-current="page"{% endif %}>Calendario</a>
-                            <a href="{% url 'archivados' %}"{% if actual == "archivados" %} aria-current="page"{% endif %}>Archivados</a>
-                            <a href="{% url 'perfil' %}"{% if actual == "perfil" or actual == "editar_perfil" %} aria-current="page"{% endif %}>Mi perfil</a>
-                        </nav>
-                    {% endwith %}
+                    </a>
+                    <nav class="nav" aria-label="Secciones">
+                        <a href="{% url 'inicio' %}"{% if seccion == "hoy" %} aria-current="page"{% endif %}>Hoy</a>
+                        <a href="{% url 'mis_habiticos' %}"{% if seccion == "mis_habiticos" %} aria-current="page"{% endif %}>Mis habiticos</a>
+                        <a href="{% url 'calendario' %}"{% if seccion == "calendario" %} aria-current="page"{% endif %}>Calendario</a>
+                        <a href="{% url 'identidades' %}"{% if seccion == "identidades" %} aria-current="page"{% endif %}>Identidades</a>
+                        <a href="{% url 'perfil' %}"{% if seccion == "perfil" %} aria-current="page"{% endif %}>Mi perfil</a>
+                    </nav>
                 </div>
                 <div class="barra-abajo">
                     <form method="post" action="{% url 'account_logout' %}">
@@ -54,6 +50,43 @@
                     <p class="pie-legal"><a href="{% url 'privacidad' %}">Privacidad</a> · <a href="{% url 'terminos' %}">Términos</a></p>
                 </div>
             </aside>
+
+            {# Celular: barra de abajo (lo de todos los días) y "Más" (lo demás) #}
+            <nav class="pestanas" aria-label="Secciones">
+                <a class="pestana" href="{% url 'inicio' %}"{% if seccion == "hoy" %} aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>
+                    <span>Hoy</span>
+                </a>
+                <a class="pestana" href="{% url 'mis_habiticos' %}"{% if seccion == "mis_habiticos" %} aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>
+                    <span>Mis habiticos</span>
+                </a>
+                <button class="pestana{% if seccion_en_mas %} activa{% endif %}" type="button" id="abrir-mas" aria-haspopup="dialog" aria-controls="mas">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>
+                    <span>Más</span>
+                </button>
+            </nav>
+
+            <dialog class="hoja" id="mas" aria-label="Más opciones" tabindex="-1">
+                <div class="hoja-asa" aria-hidden="true"></div>
+                <a class="hoja-perfil" href="{% url 'perfil' %}">
+                    {% include "_avatar.html" %}
+                    <span class="hoja-perfil-texto">
+                        <strong>{{ nombre }}</strong>
+                        <span class="suave-chico">{% if user.perfil.nombre_usuario %}@{{ user.perfil.nombre_usuario }}{% else %}Mi perfil{% endif %}</span>
+                    </span>
+                    <span class="hoja-flecha" aria-hidden="true">›</span>
+                </a>
+                <nav class="hoja-enlaces" aria-label="Más secciones">
+                    <a href="{% url 'calendario' %}"{% if seccion == "calendario" %} aria-current="page"{% endif %}>📅 <span>Calendario</span></a>
+                    <a href="{% url 'identidades' %}"{% if seccion == "identidades" %} aria-current="page"{% endif %}>🌱 <span>Identidades</span></a>
+                </nav>
+                <form method="post" action="{% url 'account_logout' %}">
+                    {% csrf_token %}
+                    <button class="boton" type="submit">Cerrar sesión</button>
+                </form>
+                <p class="pie-legal"><a href="{% url 'privacidad' %}">Privacidad</a> · <a href="{% url 'terminos' %}">Términos</a></p>
+            </dialog>
         {% endwith %}
     {% endif %}
     <div class="contenido">
@@ -77,6 +110,7 @@
         </main>
     </div>
     <script src="{% static 'js/pwa.js' %}" defer></script>
+    <script src="{% static 'js/navegacion.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
