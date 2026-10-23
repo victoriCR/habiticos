@@ -1,0 +1,79 @@
+# Blueprint de Render: describe todo lo que necesita Habiticos.
+# En Render: New → Blueprint → elegir este repositorio. Render crea lo que falte
+# y, con cada git push a main, publica la nueva versión.
+# Referencia: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: habiticos-db
+    databaseName: habiticos
+    user: habiticos
+    plan: basic-256mb
+    region: virginia  # la región de Render más cercana a Costa Rica
+    postgresMajorVersion: "17"
+
+services:
+  # La app web
+  - type: web
+    name: habiticos
+    runtime: python
+    plan: starter
+    region: virginia
+    branch: main
+    autoDeploy: true
+    buildCommand: ./build.sh
+    # Antes de pasar a la nueva versión: crear/actualizar las tablas.
+    # Si falla, la versión anterior sigue funcionando.
+    preDeployCommand: python manage.py migrate --no-input
+    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: habiticos-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true  # Render inventa una clave larga y aleatoria
+      - key: ALLOWED_HOSTS
+        value: habiticos.com,www.habiticos.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://habiticos.com,https://www.habiticos.com
+      # Secretos de Google: Render los pide al crear el Blueprint (no van en el código)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  # La tarea diaria: vaciar la papelera de todo el mundo
+  - type: cron
+    name: habiticos-papelera
+    runtime: python
+    plan: starter
+    region: virginia
+    branch: main
+    schedule: "0 9 * * *"  # todos los días a las 09:00 UTC = 3:00 a.m. en Costa Rica
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py vaciar_papelera
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: habiticos-db
+          property: connectionString
+      # La tarea usa la misma configuración que la app web
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: habiticos
+          envVarKey: SECRET_KEY
+      - key: GOOGLE_CLIENT_ID
+        fromService:
+          type: web
+          name: habiticos
+          envVarKey: GOOGLE_CLIENT_ID
+      - key: GOOGLE_CLIENT_SECRET
+        fromService:
+          type: web
+          name: habiticos
+          envVarKey: GOOGLE_CLIENT_SECRET

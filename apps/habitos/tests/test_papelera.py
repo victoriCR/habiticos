@@ -110,3 +110,27 @@ class EliminarHabiticoTests(TestCase):
         hora = f"{momento:%-I:%M} {'a.m.' if momento.hour < 12 else 'p.m.'}"
         respuesta = self.client.get("/archivados/")
         self.assertContains(respuesta, f"{momento.year}, {hora}")
+
+
+class TareaDiariaTests(TestCase):
+    def test_vacia_la_papelera_de_todo_el_mundo_y_solo_lo_vencido(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        ana = crear_usuaria(username="ana")
+        otra = crear_usuaria(username="otra")
+        hace_31_dias = timezone.now() - timedelta(days=31)
+        vencido_ana = Habito.objects.create(usuario=ana, nombre="A", activo=False, eliminado=hace_31_dias)
+        vencido_otra = Habito.objects.create(usuario=otra, nombre="B", activo=False, eliminado=hace_31_dias)
+        reciente = Habito.objects.create(usuario=otra, nombre="C", activo=False, eliminado=timezone.now())
+        activo = Habito.objects.create(usuario=ana, nombre="D")
+
+        salida = StringIO()
+        call_command("vaciar_papelera", stdout=salida)
+
+        self.assertIn("2 habitico(s)", salida.getvalue())
+        quedan = set(Habito.todos.values_list("pk", flat=True))
+        self.assertEqual(quedan, {reciente.pk, activo.pk})
+        self.assertNotIn(vencido_ana.pk, quedan)
+        self.assertNotIn(vencido_otra.pk, quedan)

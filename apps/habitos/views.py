@@ -254,13 +254,19 @@ def recuperar_habito(request, pk):
     return redirect("archivados")
 
 
-def vaciar_papelera(usuario):
+def vaciar_papelera(usuario=None):
     """Borra para siempre (con sus registros) los eliminados hace más de DIAS_EN_PAPELERA.
 
-    Se llama cuando la persona entra a la app, así no hace falta una tarea programada.
+    Con una usuaria: solo su papelera (se llama cuando entra a la app).
+    Sin usuaria: la de todo el mundo (la tarea diaria: manage.py vaciar_papelera).
+    Devuelve cuántos habiticos borró.
     """
     limite = timezone.now() - timedelta(days=DIAS_EN_PAPELERA)
-    Habito.todos.filter(usuario=usuario, eliminado__lte=limite).delete()
+    vencidos = Habito.todos.filter(eliminado__lte=limite)
+    if usuario is not None:
+        vencidos = vencidos.filter(usuario=usuario)
+    borrados, por_modelo = vencidos.delete()
+    return por_modelo.get("habitos.Habito", 0)
 
 
 @login_required(redirect_field_name=None)  # sin ?next=: tras el login, a inicio

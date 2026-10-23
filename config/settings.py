@@ -43,6 +43,13 @@ ALLOWED_HOSTS = lista("ALLOWED_HOSTS")
 # Dominios https desde los que se aceptan formularios (por ejemplo, https://habiticos.com)
 CSRF_TRUSTED_ORIGINS = lista("CSRF_TRUSTED_ORIGINS")
 
+# Render le da a cada servicio su propia dirección (habiticos.onrender.com) y la
+# pone en esta variable: así la app funciona ahí incluso antes de conectar el dominio
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
 
 # Application definition
 
