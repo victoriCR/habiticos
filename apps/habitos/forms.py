@@ -11,8 +11,16 @@ campo_hora = forms.TimeInput(attrs={"type": "time"}, format="%H:%M")
 class HabitoForm(forms.ModelForm):
     class Meta:
         model = Habito
-        fields = ["nombre", "descripcion", "identidad", "publico", "hora_desde", "hora_hasta"]
+        fields = [
+            "nombre",
+            "descripcion",
+            "identidad",
+            "publico",
+            "hora_desde",
+            "hora_hasta",
+        ]
         labels = {
+            "nombre": "Nombre del habitico",
             "descripcion": "Descripción (opcional)",
             "identidad": "¿A qué identidad pertenece? (opcional)",
             "publico": "Público",
@@ -44,7 +52,9 @@ class HabitoForm(forms.ModelForm):
         campo = self.fields["identidad"]
         campo.empty_label = "Ninguna"
         if pks:
-            orden = Case(*[When(pk=pk, then=posicion) for posicion, pk in enumerate(pks)])
+            orden = Case(
+                *[When(pk=pk, then=posicion) for posicion, pk in enumerate(pks)]
+            )
             campo.queryset = Identidad.objects.filter(pk__in=pks).order_by(orden)
         else:
             campo.queryset = Identidad.objects.none()
