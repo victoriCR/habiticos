@@ -104,7 +104,9 @@ body {
 /* Opción A: calendario de un hábito */
 .calendario {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    /* minmax(0, 1fr): las 7 columnas pueden achicarse hasta caber en la pantalla
+       (con 1fr solo, una casilla con texto largo ensanchaba toda la semana) */
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
 }
 
@@ -1501,4 +1503,19 @@ a.dato {
 /* Las descripciones dentro de una tarjeta de opción se parten en varias líneas */
 .opcion .suave-chico {
     white-space: normal;
+}
+
+/* Hora debajo del ✅ en el calendario: "1:50 p.m." en la computadora, "13:50" en el celular */
+.hora-corta {
+    display: none;
+}
+
+@media (max-width: 720px) {
+    .hora-larga {
+        display: none;
+    }
+
+    .hora-corta {
+        display: inline;
+    }
 }

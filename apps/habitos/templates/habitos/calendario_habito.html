@@ -37,13 +37,13 @@
                                 aria-label="{{ dia.fecha|date:'j \d\e F' }}: {{ dia.hecho|yesno:'cumplido,sin marcar' }}. Tocá para modificar.">
                             <span class="numero">{{ dia.fecha.day }}</span>
                             {% if dia.hecho %}<span>✅</span>{% endif %}
-                            {% if dia.marcado %}<span class="hora-celda">{{ dia.marcado|time:"g:i a" }}</span>{% endif %}
+                            {% if dia.marcado %}<span class="hora-celda" title="{{ dia.marcado|time:'g:i a' }}"><span class="hora-larga">{{ dia.marcado|time:"g:i a" }}</span><span class="hora-corta">{{ dia.marcado|time:"H:i" }}</span></span>{% endif %}
                         </button>
                     {% else %}
                         <div class="celda{% if dia.futuro or dia.antes %} apagada{% endif %}{% if dia.hoy %} hoy{% endif %}"{% if dia.hecho %} title="Cumplido"{% endif %}>
                             <span class="numero">{{ dia.fecha.day }}</span>
                             {% if dia.hecho %}<span>✅</span>{% endif %}
-                            {% if dia.marcado %}<span class="hora-celda">{{ dia.marcado|time:"g:i a" }}</span>{% endif %}
+                            {% if dia.marcado %}<span class="hora-celda" title="{{ dia.marcado|time:'g:i a' }}"><span class="hora-larga">{{ dia.marcado|time:"g:i a" }}</span><span class="hora-corta">{{ dia.marcado|time:"H:i" }}</span></span>{% endif %}
                         </div>
                     {% endif %}
                 {% endfor %}
