@@ -81,6 +81,17 @@ class Habito(models.Model):
         return self.hora_desde <= hora <= self.hora_hasta
 
 
+# Un habitico marcado se puede deshacer (o cambiarle la hora) durante este tiempo
+# desde que se tocó; después queda confirmado
+MARGEN_PARA_DESHACER = timedelta(hours=1)
+
+
+def ahora():
+    """El momento actual. (Una función propia, y no timezone.now directamente, para
+    que las pruebas puedan simular otra hora.)"""
+    return timezone.now()
+
+
 class Registro(models.Model):
     habito = models.ForeignKey(
         Habito,
@@ -91,6 +102,10 @@ class Registro(models.Model):
     # Por defecto, el momento en que se marca; se puede corregir desde el calendario.
     # null=True: los registros anteriores a este campo no tienen hora
     marcado = models.DateTimeField(default=timezone.now, null=True)
+    # Cuándo se tocó de verdad (puede ser distinto de `marcado`, si se registró
+    # "ayer a las 10 p.m." a la 1 a.m.). El margen para deshacer cuenta desde acá.
+    # Vacío en los registros anteriores a este campo: cuentan como confirmados.
+    tocado = models.DateTimeField(default=ahora, null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -102,3 +117,13 @@ class Registro(models.Model):
 
     def __str__(self):
         return f"{self.habito} · {self.fecha}"
+
+    @property
+    def deshacer_hasta(self):
+        """Hasta cuándo se puede deshacer o cambiar (None si es un registro antiguo)."""
+        return self.tocado + MARGEN_PARA_DESHACER if self.tocado else None
+
+    def se_puede_deshacer(self, momento=None):
+        """Durante la primera hora desde que se tocó. Después queda confirmado."""
+        hasta = self.deshacer_hasta
+        return hasta is not None and (momento or timezone.now()) < hasta

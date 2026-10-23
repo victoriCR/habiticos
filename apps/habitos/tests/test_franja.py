@@ -62,10 +62,16 @@ class FranjaHorariaMarcarTests(TestCase):
         self.assertFalse(self.habito.registros.exists())
         self.assertContains(respuesta, "solo se puede marcar de 10:00 a.m. a 5:00 p.m.")
 
-    def test_desmarcar_fuera_de_la_franja_si_se_permite(self):
+    def test_desmarcar_fuera_de_la_franja_si_se_permite_durante_la_primera_hora(self):
         self.marcar_a_las(16, 59)
-        self.marcar_a_las(20, 0)
+        self.marcar_a_las(17, 30)  # ya terminó la franja, pero no pasó 1 hora
         self.assertFalse(self.habito.registros.exists())
+
+    def test_pasada_la_primera_hora_queda_confirmado(self):
+        self.marcar_a_las(16, 59)
+        respuesta = self.marcar_a_las(20, 0)
+        self.assertTrue(self.habito.registros.exists())
+        self.assertContains(respuesta, "ya está confirmado")
 
     def test_inicio_lo_muestra_bloqueado_fuera_de_la_franja(self):
         with mock.patch("django.utils.timezone.now", return_value=a_las(8, 0)):

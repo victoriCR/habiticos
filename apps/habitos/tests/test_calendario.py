@@ -160,9 +160,11 @@ class RegistrarDiaTests(TestCase):
 
     def test_el_calendario_solo_deja_tocar_hoy_y_ayer_y_muestra_la_hora(self):
         self.registrar(self.ayer, "22:00")
-        respuesta = self.client.get(
-            f"/habitos/{self.habito.pk}/calendario/?mes={self.ayer:%Y-%m}"
-        )
+        # En el mismo momento simulado (si no, ya habría pasado la hora y estaría confirmado)
+        with mock.patch("django.utils.timezone.now", return_value=a_las(12, 0)):
+            respuesta = self.client.get(
+                f"/habitos/{self.habito.pk}/calendario/?mes={self.ayer:%Y-%m}"
+            )
         html = respuesta.content.decode()
         self.assertIn(f'data-fecha="{self.ayer.isoformat()}"', html)
         self.assertNotIn(f'data-fecha="{(self.hoy - timedelta(days=2)).isoformat()}"', html)

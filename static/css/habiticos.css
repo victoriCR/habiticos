@@ -1472,3 +1472,19 @@ a.dato {
         display: inline;
     }
 }
+
+/* "Tocá para deshacer · hasta las 2:50 p.m.": una línea debajo, solo durante la primera hora.
+   El margen izquierdo la alinea con el nombre (círculo de 22 px + 12 px de espacio). */
+.habito .deshacer {
+    flex-basis: 100%;
+    order: 1;
+    margin-left: 34px;
+    color: var(--suave);
+    font-size: 0.8rem;
+}
+
+/* Confirmado: no se puede tocar, pero se ve normal (está hecho, no bloqueado) */
+.habito.confirmado:disabled {
+    cursor: default;
+    opacity: 1;
+}

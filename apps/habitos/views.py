@@ -90,20 +90,25 @@ def inicio(request):
 
     # Una sola consulta con todos los registros, agrupados por hábito
     fechas = defaultdict(set)
-    marcado_hoy = {}
-    registros = Registro.objects.filter(habito__in=habitos).values_list(
-        "habito_id", "fecha", "marcado"
-    )
-    for habito_id, fecha, marcado in registros:
-        fechas[habito_id].add(fecha)
-        if fecha == hoy:
-            marcado_hoy[habito_id] = marcado
+    de_hoy = {}
+    for registro in Registro.objects.filter(habito__in=habitos).only(
+        "habito_id", "fecha", "marcado", "tocado"
+    ):
+        fechas[registro.habito_id].add(registro.fecha)
+        if registro.fecha == hoy:
+            de_hoy[registro.habito_id] = registro
 
     for habito in habitos:
+        registro = de_hoy.get(habito.pk)
         habito.racha = calcular_racha(fechas[habito.pk], hoy)
-        habito.marcado_hoy = marcado_hoy.get(habito.pk)
-        habito.hecho = hoy in fechas[habito.pk]
-        # Fuera de su franja no se puede marcar (pero sí desmarcar)
+        habito.hecho = registro is not None
+        habito.marcado_hoy = registro.marcado if registro else None
+        # Marcado: se puede deshacer durante la primera hora; después queda confirmado
+        habito.deshacer_hasta = (
+            registro.deshacer_hasta if registro and registro.se_puede_deshacer() else None
+        )
+        habito.confirmado = habito.hecho and habito.deshacer_hasta is None
+        # Fuera de su franja no se puede marcar
         habito.bloqueado = not habito.hecho and not habito.en_franja(ahora.time())
 
     # Cada hábito cumplido es un voto por su identidad (James Clear)
@@ -385,8 +390,9 @@ def calendario_habito(request, pk):
     editables = dias_editables(hoy)
     primero = primer_dia_del_mes(request.GET.get("mes"), hoy)
     inicio = timezone.localdate(habito.creado)
-    marcados = dict(habito.registros.values_list("fecha", "marcado"))
-    fechas = set(marcados)
+    registros = {r.fecha: r for r in habito.registros.only("fecha", "marcado", "tocado")}
+    marcados = {fecha: r.marcado for fecha, r in registros.items()}
+    fechas = set(registros)
 
     semanas = [
         [
@@ -394,7 +400,9 @@ def calendario_habito(request, pk):
                 **estado_del_dia(d, fechas, hoy, inicio),
                 "en_mes": d.month == primero.month,
                 "marcado": marcados.get(d),
-                "editable": d in editables,
+                # Hoy y ayer, salvo que ya estén confirmados (marcados hace más de 1 hora)
+                "editable": d in editables
+                and (d not in registros or registros[d].se_puede_deshacer()),
             }
             for d in semana
         ]
@@ -410,6 +418,13 @@ def calendario_habito(request, pk):
             "estadisticas": estadisticas(fechas, hoy),
             **navegacion(primero, hoy),
         },
+    )
+
+
+def ya_confirmado(habito):
+    return (
+        f"«{habito.nombre}» ya está confirmado: solo se puede deshacer o cambiar "
+        "durante la primera hora."
     )
 
 
@@ -434,8 +449,14 @@ def registrar_dia(request, pk):
         messages.error(request, "Solo se pueden modificar hoy y ayer.")
         return volver
 
+    existente = habito.registros.filter(fecha=fecha).first()
+    if existente and not existente.se_puede_deshacer():
+        messages.error(request, ya_confirmado(habito))
+        return volver
+
     if accion == "desmarcar":
-        habito.registros.filter(fecha=fecha).delete()
+        if existente:
+            existente.delete()
         return volver
     if accion != "guardar":
         return HttpResponseBadRequest("Acción inválida")
@@ -473,8 +494,11 @@ def marcar_habito(request, pk):
     registro = habito.registros.filter(fecha=ahora.date()).first()
 
     if registro:
-        # Desmarcar siempre se permite, por si fue un error
-        registro.delete()
+        if registro.se_puede_deshacer():
+            # Durante la primera hora se puede deshacer, por si fue un error
+            registro.delete()
+        else:
+            messages.error(request, ya_confirmado(habito))
     elif habito.en_franja(ahora.time()):
         Registro.objects.get_or_create(habito=habito, fecha=ahora.date())
     else:
