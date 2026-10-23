@@ -82,12 +82,20 @@ class NavegacionCelularTests(TestCase):
         self.assertContains(respuesta, 'class="pestana" href="/mis-habiticos/"')
         self.assertContains(respuesta, 'id="abrir-mas"')
 
-    def test_el_panel_mas_tiene_perfil_calendario_identidades_y_cerrar_sesion(self):
+    def test_el_panel_mas_tiene_calendario_identidades_y_cerrar_sesion(self):
         respuesta = self.client.get("/").content.decode()
         panel = respuesta[respuesta.index('<dialog class="hoja" id="mas"'):respuesta.index("</dialog>", respuesta.index('id="mas"'))]
-        for enlace in ('href="/perfil/"', 'href="/calendario/"', 'href="/identidades/"', 'href="/privacidad/"'):
+        for enlace in ('href="/calendario/"', 'href="/identidades/"', 'href="/privacidad/"'):
             self.assertIn(enlace, panel)
         self.assertIn("Cerrar sesión", panel)
+        # Mi perfil está en la franja de arriba, no repetido en "Más"
+        self.assertNotIn('href="/perfil/"', panel)
+
+    def test_la_franja_de_arriba_muestra_el_nombre_y_lleva_al_perfil(self):
+        respuesta = self.client.get("/").content.decode()
+        franja = respuesta[respuesta.index('<header class="cabecera-movil">'):respuesta.index("</header>", respuesta.index("cabecera-movil"))]
+        self.assertIn('href="/perfil/"', franja)
+        self.assertIn('class="perfil-nombre"', franja)
 
     def test_mas_se_resalta_en_las_secciones_que_contiene(self):
         self.assertContains(self.client.get("/calendario/"), 'class="pestana activa"')

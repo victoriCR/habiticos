@@ -51,6 +51,14 @@
                 </div>
             </aside>
 
+            {# Celular: arriba, tu foto y tu nombre (llevan a Mi perfil) #}
+            <header class="cabecera-movil">
+                <a class="perfil" href="{% url 'perfil' %}"{% if seccion == "perfil" %} aria-current="page"{% endif %}>
+                    {% include "_avatar.html" %}
+                    <span class="perfil-nombre">{{ nombre }}</span>
+                </a>
+            </header>
+
             {# Celular: barra de abajo (lo de todos los días) y "Más" (lo demás) #}
             <nav class="pestanas" aria-label="Secciones">
                 <a class="pestana" href="{% url 'inicio' %}"{% if seccion == "hoy" %} aria-current="page"{% endif %}>
@@ -69,14 +77,6 @@
 
             <dialog class="hoja" id="mas" aria-label="Más opciones" tabindex="-1">
                 <div class="hoja-asa" aria-hidden="true"></div>
-                <a class="hoja-perfil" href="{% url 'perfil' %}">
-                    {% include "_avatar.html" %}
-                    <span class="hoja-perfil-texto">
-                        <strong>{{ nombre }}</strong>
-                        <span class="suave-chico">{% if user.perfil.nombre_usuario %}@{{ user.perfil.nombre_usuario }}{% else %}Mi perfil{% endif %}</span>
-                    </span>
-                    <span class="hoja-flecha" aria-hidden="true">›</span>
-                </a>
                 <nav class="hoja-enlaces" aria-label="Más secciones">
                     <a href="{% url 'calendario' %}"{% if seccion == "calendario" %} aria-current="page"{% endif %}>📅 <span>Calendario</span></a>
                     <a href="{% url 'identidades' %}"{% if seccion == "identidades" %} aria-current="page"{% endif %}>🌱 <span>Identidades</span></a>

@@ -16,8 +16,9 @@ SECCIONES = {
     "eliminar_cuenta": "perfil",
 }
 
-# Las que en el celular están dentro de "Más" (la barra de abajo solo tiene Hoy y Mis habiticos)
-EN_MAS = {"calendario", "identidades", "perfil"}
+# Las que en el celular están dentro de "Más" (la barra de abajo solo tiene Hoy y Mis
+# habiticos; Mi perfil se abre desde la franja de arriba)
+EN_MAS = {"calendario", "identidades"}
 
 
 def seccion(request):
