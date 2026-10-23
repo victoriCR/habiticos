@@ -1,0 +1,56 @@
+{# Una tarjeta de la Comunidad: el día de una persona #}
+<article class="tarjeta" id="dia-{{ tarjeta.dia.pk }}">
+    <header class="tarjeta-cabecera">
+        {% with foto=tarjeta.foto nombre=tarjeta.persona.get_full_name|default:tarjeta.persona.perfil.nombre_usuario %}
+            {% if tarjeta.persona == user %}
+                <a class="tarjeta-persona" href="{% url 'perfil' %}">{% include "_avatar.html" %}<strong>Vos</strong></a>
+            {% else %}
+                <a class="tarjeta-persona" href="{% url 'perfil_publico' tarjeta.persona.perfil.nombre_usuario %}">{% include "_avatar.html" %}<strong>{{ nombre }}</strong></a>
+            {% endif %}
+        {% endwith %}
+        <span class="suave-chico">{% if tarjeta.dia.fecha == hoy %}hace {{ tarjeta.dia.actualizado|timesince }}{% else %}{{ tarjeta.dia.fecha|date:"l j \d\e F"|capfirst }}{% endif %}</span>
+    </header>
+
+    <p class="tarjeta-resumen">
+        Completó {{ tarjeta.cumplidos|length }} habitico{{ tarjeta.cumplidos|length|pluralize }}{% if tarjeta.dia.fecha == hoy %} hoy{% endif %}
+    </p>
+    <ul class="tarjeta-lista">
+        {% for cumplido in tarjeta.cumplidos %}
+            <li>
+                <span>✓ {% if cumplido.habito.identidad %}{{ cumplido.habito.identidad.emoji }} {% endif %}{{ cumplido.habito.nombre }}</span>
+                <span class="tarjeta-marcas">
+                    {% if cumplido.hito %}<span class="hito" title="¡{{ cumplido.racha }} días seguidos!">🏆 {{ cumplido.racha }} días</span>
+                    {% elif cumplido.retomo %}<span class="retomo" title="Volvió después de cortar la racha">🔁 Retomó</span>
+                    {% elif cumplido.racha > 1 %}<span>🔥 {{ cumplido.racha }}</span>{% endif %}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tarjeta-reacciones">
+        <form method="post" action="{% url 'apoyar' tarjeta.dia.pk %}">
+            {% csrf_token %}
+            <button class="reaccion{% if tarjeta.yo_apoye %} activa{% endif %}" type="submit" aria-pressed="{{ tarjeta.yo_apoye|yesno:'true,false' }}">
+                {% if tarjeta.yo_apoye %}❤️{% else %}🤍{% endif %} Apoyar{% if tarjeta.apoyos %} · {{ tarjeta.apoyos }}{% endif %}
+            </button>
+        </form>
+        <details class="animar">
+            <summary class="reaccion{% if tarjeta.mi_animo %} activa{% endif %}">💬 Animar</summary>
+            <form class="frases" method="post" action="{% url 'animar' tarjeta.dia.pk %}">
+                {% csrf_token %}
+                {% for clave, texto in frases.items %}
+                    <button class="frase-opcion{% if tarjeta.mi_animo == clave %} activa{% endif %}" type="submit" name="frase" value="{{ clave }}">{{ texto }}</button>
+                {% endfor %}
+            </form>
+        </details>
+    </div>
+
+    {% if tarjeta.animos %}
+        <p class="tarjeta-animos suave-chico">
+            {% for animo in tarjeta.animos|slice:":3" %}
+                <strong>{% if animo.persona == user %}Vos{% else %}{{ animo.persona.first_name|default:animo.persona.perfil.nombre_usuario }}{% endif %}</strong>: «{{ animo.frase }}»{% if not forloop.last %} · {% endif %}
+            {% endfor %}
+            {% if tarjeta.animos|length > 3 %} · y {{ tarjeta.animos|length|add:"-3" }} más{% endif %}
+        </p>
+    {% endif %}
+</article>

@@ -1,72 +1,155 @@
 {% extends "base.html" %}
 
-{% block titulo %}Mi perfil · Habiticos{% endblock %}
+{% block titulo %}{% if es_mio %}Mi perfil{% else %}{{ dueno.get_full_name|default:perfil.nombre_usuario }}{% endif %} · Habiticos{% endblock %}
 
 {% block contenido %}
     <div class="columna">
-        <p class="ayuda vista-previa">👀 Así te van a ver los demás. Solo se muestran tus habiticos públicos.</p>
+        {% if es_mio %}
+            <p class="ayuda vista-previa">👀 Así te ven las personas de Habiticos. Solo se muestran tus habiticos públicos.</p>
+        {% endif %}
 
         <div class="tarjeta-perfil">
             <header class="perfil-cabecera">
                 {% if foto %}
                     <img class="avatar avatar-grande" src="{{ foto }}" alt="" referrerpolicy="no-referrer">
                 {% else %}
-                    <span class="avatar avatar-grande" aria-hidden="true">{{ user.get_full_name|default:"?"|first|upper }}</span>
+                    <span class="avatar avatar-grande" aria-hidden="true">{{ dueno.get_full_name|default:"?"|first|upper }}</span>
                 {% endif %}
                 <div class="perfil-datos">
-                    {# Nunca el email: el perfil es público #}
-                    <h1>{{ user.get_full_name|default:"Sin nombre" }}</h1>
+                    {# Nunca el email: el perfil lo ven otras personas #}
+                    <h1>{{ dueno.get_full_name|default:"Sin nombre" }}</h1>
                     {% if perfil.nombre_usuario %}
-                        <p class="arroba">@{{ perfil.nombre_usuario }}</p>
-                    {% else %}
-                        <p class="arroba"><a href="{% url 'editar_perfil' %}">Elegí tu @usuario</a></p>
+                        <p class="arroba">@{{ perfil.nombre_usuario }}{% if me_sigue %} · <span class="te-sigue">Te sigue</span>{% endif %}</p>
+                    {% elif es_mio %}
+                        <p class="arroba"><a href="{% url 'editar_perfil' %}">Elegí tu @usuario</a> para que te encuentren</p>
                     {% endif %}
                     {% if perfil.frase %}<p class="frase">{{ perfil.frase }}</p>{% endif %}
                 </div>
-                <a class="boton editar-perfil" href="{% url 'editar_perfil' %}">Editar perfil</a>
+
+                {% if es_mio %}
+                    <div class="perfil-acciones">
+                        <a class="boton editar-perfil" href="{% url 'editar_perfil' %}">Editar perfil</a>
+                        {% if perfil.nombre_usuario %}
+                            <button class="boton editar-perfil" type="button" id="compartir-perfil"
+                                    data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'perfil_publico' perfil.nombre_usuario %}">Compartir</button>
+                        {% endif %}
+                    </div>
+                {% elif not yo_bloquee %}
+                    <div class="perfil-acciones">
+                        <form method="post" action="{% url 'seguir' perfil.nombre_usuario %}">
+                            {% csrf_token %}
+                            {% if sigo %}
+                                <button class="boton editar-perfil" type="submit">Siguiendo ✓</button>
+                            {% else %}
+                                <button class="boton principal editar-perfil" type="submit">Seguir</button>
+                            {% endif %}
+                        </form>
+                        {# Lo que casi nunca se usa, guardado en un menú #}
+                        <details class="menu-perfil">
+                            <summary class="boton editar-perfil" aria-label="Más opciones">⋯</summary>
+                            <div class="menu-perfil-opciones">
+                                <a href="{% url 'reportar' perfil.nombre_usuario %}">Reportar</a>
+                                <form method="post" action="{% url 'bloquear' perfil.nombre_usuario %}">
+                                    {% csrf_token %}
+                                    <button type="submit">Bloquear</button>
+                                </form>
+                            </div>
+                        </details>
+                    </div>
+                {% endif %}
             </header>
 
-            <div class="datos-perfil">
-                <div class="dato">
-                    <strong>{{ publicos|length }}</strong>
-                    <span>Habitico{{ publicos|length|pluralize }}</span>
+            {% if yo_bloquee %}
+                <div class="aviso aviso-peligro bloqueado-aviso">
+                    <p>Bloqueaste a esta persona: no ve tu perfil ni tus días, y vos no ves los suyos.</p>
+                    <form method="post" action="{% url 'bloquear' perfil.nombre_usuario %}">
+                        {% csrf_token %}
+                        <button class="boton" type="submit">Desbloquear</button>
+                    </form>
                 </div>
-                <div class="dato">
-                    <strong>{% if constancia is not None %}{{ constancia }}%{% else %}—{% endif %}</strong>
-                    <span title="Días cumplidos en los últimos 30 días">Constancia</span>
-                </div>
-                <div class="dato">
-                    <strong>🔥 {{ mejor_racha }}</strong>
-                    <span>Mejor racha</span>
-                </div>
-            </div>
-
-            <h2>Mis identidades</h2>
-            {% if identidades %}
-                <ul class="chips">
-                    {% for identidad in identidades %}
-                        <li class="chip">{{ identidad.emoji }} {{ identidad.nombre }}</li>
-                    {% endfor %}
-                </ul>
             {% else %}
-                <p class="suave">Todavía no elegiste identidades. <a href="{% url 'identidades' %}">Elegilas acá.</a></p>
-            {% endif %}
-
-            <h2>Mis habiticos públicos</h2>
-            {% for habito in publicos %}
-                <div class="habitico-publico">
-                    <div class="habitico-publico-linea">
-                        <span>{% if habito.identidad %}{{ habito.identidad.emoji }} {% endif %}{{ habito.nombre }}</span>
-                        <span class="suave-chico">{{ habito.semana }}/7 días</span>
+                <div class="datos-perfil">
+                    <div class="dato">
+                        <strong>{{ publicos|length }}</strong>
+                        <span>Habitico{{ publicos|length|pluralize }}</span>
                     </div>
-                    <div class="progreso" role="progressbar" aria-label="{{ habito.nombre }}: {{ habito.semana }} de los últimos 7 días"
-                         aria-valuemin="0" aria-valuemax="7" aria-valuenow="{{ habito.semana }}">
-                        <span style="width: {% widthratio habito.semana 7 100 %}%"></span>
+                    <div class="dato">
+                        <strong>{% if constancia is not None %}{{ constancia }}%{% else %}—{% endif %}</strong>
+                        <span title="Días cumplidos en los últimos 30 días">Constancia</span>
                     </div>
+                    {% if perfil.nombre_usuario %}
+                        <a class="dato" href="{% url 'seguidores' perfil.nombre_usuario %}">
+                            <strong>{{ seguidores }}</strong>
+                            <span>Seguidor{{ seguidores|pluralize:"es" }}</span>
+                        </a>
+                    {% else %}
+                        <div class="dato">
+                            <strong>{{ seguidores }}</strong>
+                            <span>Seguidor{{ seguidores|pluralize:"es" }}</span>
+                        </div>
+                    {% endif %}
                 </div>
-            {% empty %}
-                <p class="suave">Todavía no tenés habiticos públicos. Para mostrar uno, activá «Público» al editarlo.</p>
-            {% endfor %}
+                <p class="suave-chico perfil-siguiendo">
+                    {% if perfil.nombre_usuario %}<a href="{% url 'siguiendo' perfil.nombre_usuario %}">Sigue a {{ siguiendo }} persona{{ siguiendo|pluralize }}</a> · {% endif %}🔥 Mejor racha: {{ mejor_racha }}
+                </p>
+
+                <h2>{% if es_mio %}Mis identidades{% else %}Sus identidades{% endif %}</h2>
+                {% if identidades %}
+                    <ul class="chips">
+                        {% for identidad in identidades %}
+                            <li class="chip">{{ identidad.emoji }} {{ identidad.nombre }}</li>
+                        {% endfor %}
+                    </ul>
+                {% elif es_mio %}
+                    <p class="suave">Todavía no elegiste identidades. <a href="{% url 'identidades' %}">Elegilas acá.</a></p>
+                {% else %}
+                    <p class="suave">Todavía no eligió identidades.</p>
+                {% endif %}
+
+                <h2>{% if es_mio %}Mis habiticos públicos{% else %}Sus habiticos públicos{% endif %}</h2>
+                {% for habito in publicos %}
+                    <div class="habitico-publico">
+                        <div class="habitico-publico-linea">
+                            <span>{% if habito.identidad %}{{ habito.identidad.emoji }} {% endif %}{{ habito.nombre }}</span>
+                            <span class="suave-chico">{{ habito.semana }}/7 días</span>
+                        </div>
+                        <div class="progreso" role="progressbar" aria-label="{{ habito.nombre }}: {{ habito.semana }} de los últimos 7 días"
+                             aria-valuemin="0" aria-valuemax="7" aria-valuenow="{{ habito.semana }}">
+                            <span style="width: {% widthratio habito.semana 7 100 %}%"></span>
+                        </div>
+                    </div>
+                {% empty %}
+                    {% if es_mio %}
+                        <p class="suave">Todavía no tenés habiticos públicos. Para mostrar uno, activá «Público» al editarlo.</p>
+                    {% else %}
+                        <p class="suave">Todavía no tiene habiticos públicos.</p>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {% if es_mio %}
+        <script>
+            // Compartir el perfil: el menú del teléfono si existe; si no, copiar el enlace
+            const botonCompartir = document.getElementById("compartir-perfil");
+            if (botonCompartir) {
+                botonCompartir.addEventListener("click", async () => {
+                    const url = botonCompartir.dataset.url;
+                    try {
+                        if (navigator.share) {
+                            await navigator.share({ title: "Mi perfil en Habiticos", url });
+                        } else {
+                            await navigator.clipboard.writeText(url);
+                            botonCompartir.textContent = "¡Enlace copiado!";
+                        }
+                    } catch (error) {
+                        // Si la persona cancela el menú de compartir, no pasa nada
+                    }
+                });
+            }
+        </script>
+    {% endif %}
 {% endblock %}

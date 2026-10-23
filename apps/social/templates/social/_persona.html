@@ -1,0 +1,20 @@
+{# Una fila con una persona y su botón Seguir/Siguiendo. Necesita "p" #}
+<li class="fila persona-fila">
+    {% with foto=p.foto nombre=p.get_full_name|default:p.perfil.nombre_usuario %}
+        <a class="habito crece persona-enlace" href="{% url 'perfil_publico' p.perfil.nombre_usuario %}">
+            {% include "_avatar.html" %}
+            <span class="persona-texto"><strong>{{ nombre }}</strong><span class="suave-chico">@{{ p.perfil.nombre_usuario }}</span></span>
+        </a>
+    {% endwith %}
+    {% if p != user %}
+        <form method="post" action="{% url 'seguir' p.perfil.nombre_usuario %}">
+            {% csrf_token %}
+            <input type="hidden" name="volver" value="{{ request.get_full_path }}">
+            {% if p.sigo %}
+                <button class="lateral" type="submit">Siguiendo ✓</button>
+            {% else %}
+                <button class="lateral seguir" type="submit">Seguir</button>
+            {% endif %}
+        </form>
+    {% endif %}
+</li>

@@ -14,14 +14,17 @@ from .forms import PerfilForm
 from .models import Perfil
 
 
-@login_required
-def mi_perfil(request):
-    """Tu perfil, tal como lo verán los demás: solo tus habiticos públicos."""
-    perfil, _ = Perfil.objects.get_or_create(usuario=request.user)
+def foto_de(usuario):
+    """La foto de Google de una persona (o None)."""
+    cuenta = usuario.socialaccount_set.filter(provider="google").first()
+    return cuenta.get_avatar_url() if cuenta else None
+
+
+def datos_de_perfil(usuario):
+    """Lo que muestra un perfil (el tuyo o el de otra persona): solo lo público."""
+    perfil, _ = Perfil.objects.get_or_create(usuario=usuario)
     hoy = timezone.localdate()
-    publicos = en_orden_de_identidades(
-        request.user, request.user.habitos.filter(activo=True, publico=True)
-    )
+    publicos = en_orden_de_identidades(usuario, usuario.habitos.filter(activo=True, publico=True))
 
     fechas = defaultdict(set)
     for habito_id, fecha in Registro.objects.filter(habito__in=publicos).values_list(
@@ -31,22 +34,31 @@ def mi_perfil(request):
     for habito in publicos:
         habito.semana = dias_en_la_semana(fechas[habito.pk], hoy)
 
-    cuenta_google = request.user.socialaccount_set.filter(provider="google").first()
+    return {
+        "dueno": usuario,
+        "perfil": perfil,
+        "foto": foto_de(usuario),
+        "identidades": [
+            e.identidad for e in usuario.identidades_elegidas.select_related("identidad")
+        ],
+        "publicos": publicos,
+        "constancia": constancia(
+            [(timezone.localdate(h.creado), fechas[h.pk]) for h in publicos], hoy
+        ),
+        "mejor_racha": max((mejor_racha(fechas[h.pk]) for h in publicos), default=0),
+        # Los vínculos de "seguir" viven en la app social (related_name en sus modelos)
+        "seguidores": usuario.seguidores.count(),
+        "siguiendo": usuario.siguiendo.count(),
+    }
+
+
+@login_required
+def mi_perfil(request):
+    """Tu perfil, tal como lo verán los demás: solo tus habiticos públicos."""
     return render(
         request,
         "perfiles/perfil.html",
-        {
-            "perfil": perfil,
-            "foto": cuenta_google.get_avatar_url() if cuenta_google else None,
-            "identidades": [
-                e.identidad for e in request.user.identidades_elegidas.select_related("identidad")
-            ],
-            "publicos": publicos,
-            "constancia": constancia(
-                [(timezone.localdate(h.creado), fechas[h.pk]) for h in publicos], hoy
-            ),
-            "mejor_racha": max((mejor_racha(fechas[h.pk]) for h in publicos), default=0),
-        },
+        {**datos_de_perfil(request.user), "es_mio": True},
     )
 
 

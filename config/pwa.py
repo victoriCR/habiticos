@@ -27,7 +27,12 @@ def service_worker(request):
     return render(
         request,
         "pwa/sw.js",
-        {"version": version, "precarga": archivos, "prefijo_estaticos": f"/{settings.STATIC_URL.lstrip('/')}"},
+        {
+            "version": version,
+            "precarga": archivos,
+            "prefijo_estaticos": f"/{settings.STATIC_URL.lstrip('/')}",
+            "icono": static("iconos/icono-192.png"),
+        },
         content_type="application/javascript",
     )
 

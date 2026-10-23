@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <p class="volver"><a href="{% url 'perfil_publico' dueno.perfil.nombre_usuario %}">← @{{ dueno.perfil.nombre_usuario }}</a></p>
+        <h1>{{ titulo }}</h1>
+        <p class="suave">{{ dueno.get_full_name|default:dueno.perfil.nombre_usuario }}</p>
+        <ul class="habitos">
+            {% for p in personas %}
+                {% include "social/_persona.html" %}
+            {% empty %}
+                <li class="suave">Nadie todavía.</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

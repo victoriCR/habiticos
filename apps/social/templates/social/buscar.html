@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block titulo %}Buscar personas · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <p class="volver"><a href="{% url 'comunidad' %}">← Comunidad</a></p>
+        <h1>Buscar personas</h1>
+        <p class="suave">Por su @usuario o su nombre.</p>
+
+        <form class="buscador" method="get" role="search">
+            <input type="search" name="q" value="{{ texto }}" placeholder="@usuario o nombre" autocapitalize="none" autocomplete="off" aria-label="Buscar personas" autofocus>
+            <button class="boton principal" type="submit">Buscar</button>
+        </form>
+
+        {% if texto|length >= 2 %}
+            <ul class="habitos">
+                {% for p in personas %}
+                    {% include "social/_persona.html" %}
+                {% empty %}
+                    <li class="suave">No encontramos a nadie con «{{ texto }}».</li>
+                {% endfor %}
+            </ul>
+        {% elif texto %}
+            <p class="suave">Escribí al menos 2 letras.</p>
+        {% endif %}
+    </div>
+{% endblock %}

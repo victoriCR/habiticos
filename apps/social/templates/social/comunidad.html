@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block titulo %}Comunidad · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <header class="encabezado">
+            <div>
+                <h1>🌱 Comunidad</h1>
+                <p class="suave">Los pequeños logros de las personas que seguís.</p>
+            </div>
+            <div class="comunidad-acciones">
+                <a class="boton editar-perfil campanita" href="{% url 'avisos' %}" aria-label="Avisos{% if avisos_sin_leer %} ({{ avisos_sin_leer }} sin leer){% endif %}">
+                    🔔{% if avisos_sin_leer %}<span class="globito">{{ avisos_sin_leer }}</span>{% endif %}
+                </a>
+                <a class="boton editar-perfil" href="{% url 'buscar' %}">🔍 Buscar</a>
+            </div>
+        </header>
+
+        {% if not tengo_usuario %}
+            <div class="vacio-grupo">
+                Para que te encuentren, <a href="{% url 'editar_perfil' %}">elegí tu @usuario →</a>
+            </div>
+        {% endif %}
+
+        {% for tarjeta in tarjetas %}
+            {% include "social/_tarjeta.html" %}
+        {% empty %}
+            <div class="vacio-grupo">
+                {% if sigue_a_alguien %}
+                    Todavía no hay días para mostrar. Cuando las personas que seguís (o vos) marquen un habitico público, aparece acá.
+                {% else %}
+                    Todavía no seguís a nadie. <a href="{% url 'buscar' %}">Buscá a alguien por su @usuario →</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

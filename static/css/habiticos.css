@@ -1200,3 +1200,305 @@ a.perfil {
         height: 36px;
     }
 }
+
+/* --- Comunidad --- */
+
+/* Globito con la cantidad de avisos sin leer */
+.globito {
+    display: inline-grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--error);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.pestana-icono {
+    position: relative;
+    display: grid;
+}
+
+.pestana-icono .globito {
+    position: absolute;
+    top: -4px;
+    right: -10px;
+}
+
+.campanita {
+    position: relative;
+}
+
+.campanita .globito {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+}
+
+.comunidad-acciones,
+.perfil-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Tarjeta: el día de una persona */
+.tarjeta {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    background: var(--superficie);
+}
+
+.tarjeta-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.tarjeta-persona {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: var(--texto);
+    text-decoration: none;
+}
+
+.tarjeta-persona .avatar {
+    width: 36px;
+    height: 36px;
+}
+
+.tarjeta-resumen {
+    margin: 12px 0 6px;
+    font-weight: 500;
+}
+
+.tarjeta-lista {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 0;
+    list-style: none;
+}
+
+.tarjeta-lista li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+}
+
+.tarjeta-marcas {
+    color: var(--suave);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.hito {
+    color: var(--acento);
+    font-weight: 600;
+}
+
+.tarjeta-reacciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.reaccion {
+    padding: 6px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.reaccion::-webkit-details-marker {
+    display: none;
+}
+
+.reaccion.activa {
+    border-color: var(--acento);
+    background: var(--acento-suave);
+}
+
+.frases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.frase-opcion {
+    padding: 6px 10px;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: var(--fondo);
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.frase-opcion.activa {
+    border-color: var(--acento);
+    background: var(--acento-suave);
+}
+
+.tarjeta-animos {
+    margin: 12px 0 0;
+}
+
+/* Buscar y listas de personas */
+.buscador {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.buscador input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+}
+
+.buscador .boton {
+    width: auto;
+}
+
+.persona-enlace {
+    gap: 12px;
+}
+
+.persona-enlace .avatar {
+    width: 36px;
+    height: 36px;
+}
+
+.persona-texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.lateral.seguir {
+    border-color: var(--texto);
+    background: var(--texto);
+    color: var(--fondo);
+}
+
+/* Avisos */
+.aviso-fila {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+}
+
+.aviso-fila.nuevo {
+    border-color: var(--acento);
+}
+
+.aviso-fila a {
+    color: var(--texto);
+}
+
+/* Perfil de otra persona: menú ⋯ (Reportar, Bloquear) */
+.menu-perfil {
+    position: relative;
+}
+
+.menu-perfil summary {
+    list-style: none;
+}
+
+.menu-perfil summary::-webkit-details-marker {
+    display: none;
+}
+
+.menu-perfil-opciones {
+    position: absolute;
+    right: 0;
+    z-index: 5;
+    display: grid;
+    min-width: 160px;
+    margin-top: 6px;
+    padding: 6px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--superficie);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+}
+
+.menu-perfil-opciones a,
+.menu-perfil-opciones button {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.menu-perfil-opciones button {
+    color: var(--error);
+}
+
+a.dato {
+    color: var(--texto);
+    text-decoration: none;
+}
+
+.perfil-siguiendo {
+    margin: -12px 0 0;
+}
+
+.perfil-siguiendo a,
+.te-sigue {
+    color: var(--suave);
+}
+
+.bloqueado-aviso {
+    margin-top: 20px;
+}
+
+/* Aviso de éxito (por ejemplo, "Enviamos una notificación de prueba") */
+.aviso-ok {
+    border-color: var(--acento);
+    background: var(--acento-suave);
+}
+
+/* Cabecera del perfil: si los botones (Seguir, ⋯) no entran al lado del nombre,
+   bajan a su propia línea en vez de aplastar el nombre */
+.perfil-datos {
+    flex: 1 1 180px;
+}
+
+/* Las descripciones dentro de una tarjeta de opción se parten en varias líneas */
+.opcion .suave-chico {
+    white-space: normal;
+}

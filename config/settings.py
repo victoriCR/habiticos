@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     "apps.perfiles",
     "apps.identidades",
     "apps.habitos",
+    "apps.social",
+    "apps.recordatorios",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -97,6 +99,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "config.pwa.contexto",  # pwa_activa: service worker solo en producción
                 "config.navegacion.seccion",  # qué sección resaltar en la navegación
+                "apps.social.views.contexto",  # avisos sin leer (la campanita)
             ],
         },
     },
@@ -209,6 +212,13 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 # La sesión dura 7 días desde que entrás (o hasta que cerrás sesión), como la
 # mayoría de las apps: con la app instalada en el teléfono no hay que entrar cada día
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
+
+# Recordatorios en el teléfono (Web Push). Claves propias de habiticos.com: se generan
+# una vez (ver .env.example). Sin ellas, los recordatorios simplemente no aparecen.
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+# Quién manda las notificaciones (Apple y Google lo piden): una dirección web o un mailto:
+VAPID_CONTACTO = os.environ.get("VAPID_CONTACTO", "https://habiticos.com")
 
 # Correo de contacto que aparece en Privacidad y Términos (vacío: no se muestra)
 CONTACTO_EMAIL = os.environ.get("CONTACTO_EMAIL", "")

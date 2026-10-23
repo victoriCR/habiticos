@@ -26,4 +26,6 @@ urlpatterns = [
     path("", include("apps.habitos.urls")),
     path("identidades/", include("apps.identidades.urls")),
     path("perfil/", include("apps.perfiles.urls")),
+    path("recordatorios/", include("apps.recordatorios.urls")),
+    path("", include("apps.social.urls")),
 ]

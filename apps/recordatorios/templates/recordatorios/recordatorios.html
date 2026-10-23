@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Recordatorios · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <h1>🔔 Recordatorios</h1>
+        <p class="suave">Avisos en tu teléfono para no cortar tus rachas.</p>
+
+        {% if not activos %}
+            <div class="vacio-grupo">Los recordatorios todavía no están disponibles en este servidor.</div>
+        {% else %}
+            {% if prueba %}
+                <p class="aviso aviso-ok" role="status">
+                    {% if prueba == "0" %}No encontramos ningún teléfono activo: activá los recordatorios abajo.{% else %}Enviamos una notificación de prueba. 🌱{% endif %}
+                </p>
+            {% endif %}
+
+            {# Lo maneja static/js/recordatorios.js: depende de este teléfono #}
+            <section class="grupo" id="este-dispositivo" data-clave="{{ clave_publica }}"
+                     data-suscribir="{% url 'suscribir' %}" data-desuscribir="{% url 'desuscribir' %}">
+                <header class="grupo-encabezado"><h2>En este teléfono</h2></header>
+                <p class="suave" id="estado-dispositivo">Revisando…</p>
+                <div class="acciones">
+                    <button class="boton principal" type="button" id="activar" hidden>Activar recordatorios</button>
+                    <button class="boton" type="button" id="desactivar" hidden>Desactivar en este teléfono</button>
+                </div>
+            </section>
+
+            <section class="grupo">
+                <header class="grupo-encabezado"><h2>Qué querés que te avisemos</h2></header>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="campo opciones">
+                        <label class="opcion">
+                            <input type="checkbox" name="fin_de_franja"{% if ajustes.fin_de_franja %} checked{% endif %}>
+                            <span class="marca" aria-hidden="true"></span>
+                            <span><strong>⏰ Fin de la franja horaria</strong> · <span class="suave-chico">1 hora antes de que termine, si todavía no lo marcaste.</span></span>
+                        </label>
+                        <label class="opcion">
+                            <input type="checkbox" name="racha_en_riesgo"{% if ajustes.racha_en_riesgo %} checked{% endif %}>
+                            <span class="marca" aria-hidden="true"></span>
+                            <span><strong>🔥 Racha en riesgo</strong> · <span class="suave-chico">A las 8 p.m., si una racha de 2 o más días está por cortarse.</span></span>
+                        </label>
+                    </div>
+                    <div class="acciones">
+                        <button class="boton principal" type="submit">Guardar</button>
+                    </div>
+                    {% if guardado %}<p class="ayuda" role="status">Guardado ✓</p>{% endif %}
+                </form>
+            </section>
+
+            {% if dispositivos %}
+                <section class="grupo">
+                    <p class="suave">Tenés los recordatorios activos en {{ dispositivos }} teléfono{{ dispositivos|pluralize }} o navegador{{ dispositivos|pluralize:"es" }}.</p>
+                    <form method="post" action="{% url 'probar_recordatorio' %}">
+                        {% csrf_token %}
+                        <button class="boton" type="submit">Enviar una prueba</button>
+                    </form>
+                </section>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {% if activos %}<script src="{% static 'js/recordatorios.js' %}" defer></script>{% endif %}
+{% endblock %}

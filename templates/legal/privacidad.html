@@ -6,7 +6,7 @@
 {% block contenido %}
     <article class="legal">
         <h1>Política de privacidad</h1>
-        <p class="suave">Última actualización: 23 de octubre de 2026</p>
+        <p class="suave">Última actualización: 24 de octubre de 2026</p>
 
         <p>
             Habiticos es una app gratuita para construir habiticos, un día a la vez.
@@ -38,7 +38,12 @@
             <li>tus habiticos (nombre, descripción, horario permitido y si son públicos o privados);</li>
             <li>los días y la hora en que marcás cada habitico como cumplido;</li>
             <li>las identidades que elegís y su orden;</li>
-            <li>tu @usuario y tu frase de perfil.</li>
+            <li>tu @usuario y tu frase de perfil;</li>
+            <li>a quién seguís, quién te sigue, a quién bloqueaste y los reportes que hagas;</li>
+            <li>los apoyos ❤️ y ánimos 💬 que das y recibís en la Comunidad;</li>
+            <li>si activás los recordatorios, los datos que da tu teléfono para recibirlos
+                (una dirección técnica del servicio de notificaciones de Apple o Google) y qué
+                recordatorios querés.</li>
         </ul>
         <p>
             <strong>Datos técnicos:</strong> cookies necesarias para mantener tu sesión
@@ -53,6 +58,8 @@
             <li>Para que puedas iniciar sesión y usar la app.</li>
             <li>Para calcular tus rachas, tu constancia y tus votos por identidad.</li>
             <li>Para mostrar en tu perfil los habiticos que marques como públicos.</li>
+            <li>Para mostrar tu día en la Comunidad a las personas que te siguen.</li>
+            <li>Para mandarte los recordatorios que elijas.</li>
         </ul>
         <p>No vendemos tus datos ni los usamos para publicidad.</p>
 
@@ -62,16 +69,27 @@
                 <strong>Tus habiticos privados</strong> (todos lo son por defecto) solo los ves vos.
             </li>
             <li>
-                <strong>Lo que marques como público</strong> (habiticos públicos, tu nombre, tu foto,
-                tu @usuario, tu frase y tus identidades) puede mostrarse en tu perfil a otras
-                personas de Habiticos. Tu correo electrónico nunca se muestra.
+                <strong>Tu perfil</strong> (tu nombre, tu foto, tu @usuario, tu frase, tus
+                identidades, tus habiticos públicos y cuántas personas te siguen) lo pueden ver
+                las personas que iniciaron sesión en Habiticos. No es visible para quien no tiene
+                cuenta ni aparece en buscadores como Google. Tu correo electrónico nunca se muestra.
+            </li>
+            <li>
+                <strong>La Comunidad:</strong> cuando marcás un habitico público, las personas que
+                te siguen ven ese día (qué habiticos cumpliste y tus rachas) y pueden apoyarte o
+                animarte. Quien te sigue y a quién seguís también se ve en tu perfil.
+            </li>
+            <li>
+                <strong>Si bloqueás a alguien</strong>, esa persona deja de ver tu perfil y tus días.
+                Los reportes solo los ve la administración, y la persona reportada no se entera.
             </li>
             <li>
                 <strong>Proveedores:</strong> la app y la base de datos funcionan en
                 <a href="https://render.com/privacy" rel="noopener">Render</a>, con servidores en
                 Estados Unidos, y el inicio de sesión lo hace
                 <a href="https://policies.google.com/privacy" rel="noopener">Google</a>. Solo
-                procesan los datos para prestar ese servicio.
+                procesan los datos para prestar ese servicio. Los recordatorios llegan a tu
+                teléfono a través del servicio de notificaciones de Apple o de Google.
             </li>
         </ul>
 
@@ -95,6 +113,10 @@
             perfil se editan desde la app, y desde
             <a href="{% url 'eliminar_cuenta' %}">Eliminar mi cuenta</a> podés borrar todo de una vez.
             {% if contacto %}Para cualquier otra solicitud, escribí a <a href="mailto:{{ contacto }}">{{ contacto }}</a>.{% endif %}
+        </p>
+        <p>
+            Podés desactivar los recordatorios en cualquier momento desde «Recordatorios» o desde
+            los ajustes de tu teléfono.
         </p>
         <p>
             También podés quitarle a Habiticos el acceso a tu cuenta de Google desde

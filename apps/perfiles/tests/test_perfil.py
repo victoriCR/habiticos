@@ -56,7 +56,7 @@ class PerfilTests(TestCase):
         self.assertContains(respuesta, "Ana Pérez")
         self.assertContains(respuesta, identidad.nombre)
         self.assertContains(respuesta, "Elegí tu @usuario")
-        self.assertContains(respuesta, "🔥 3")
+        self.assertContains(respuesta, "Mejor racha: 3")
 
     def test_editar_perfil_guarda_usuario_en_minusculas_y_sin_arroba(self):
         self.client.post("/perfil/editar/", {"nombre_usuario": "@Ana.Perez", "frase": "Paso a paso"})

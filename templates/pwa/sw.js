@@ -21,6 +21,38 @@ self.addEventListener("activate", (evento) => {
     );
 });
 
+// Recordatorios: llegan aunque la app esté cerrada
+self.addEventListener("push", (evento) => {
+    let datos = {};
+    try {
+        datos = evento.data ? evento.data.json() : {};
+    } catch (error) {
+        datos = { texto: evento.data ? evento.data.text() : "" };
+    }
+    evento.waitUntil(
+        self.registration.showNotification(datos.titulo || "Habiticos", {
+            body: datos.texto || "",
+            icon: "{{ icono }}",
+            badge: "{{ icono }}",
+            data: { url: datos.url || "/" },
+        })
+    );
+});
+
+// Al tocar la notificación: abrir Habiticos (o traerla al frente si ya está abierta)
+self.addEventListener("notificationclick", (evento) => {
+    evento.notification.close();
+    const destino = new URL(evento.notification.data?.url || "/", self.location.origin).href;
+    evento.waitUntil(
+        clients.matchAll({ type: "window", includeUncontrolled: true }).then((ventanas) => {
+            for (const ventana of ventanas) {
+                if ("focus" in ventana) return ventana.navigate(destino).then((v) => (v || ventana).focus());
+            }
+            return clients.openWindow(destino);
+        })
+    );
+});
+
 self.addEventListener("fetch", (evento) => {
     const pedido = evento.request;
     const url = new URL(pedido.url);

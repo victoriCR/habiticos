@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block titulo %}Avisos · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <p class="volver"><a href="{% url 'comunidad' %}">← Comunidad</a></p>
+        <h1>🔔 Avisos</h1>
+        <ul class="habitos">
+            {% for aviso in avisos %}
+                <li class="aviso-fila{% if not aviso.leido %} nuevo{% endif %}">
+                    {% with foto=aviso.foto nombre=aviso.actor.get_full_name|default:aviso.actor.perfil.nombre_usuario %}
+                        {% include "_avatar.html" %}
+                        <span class="crece">
+                            {% if aviso.actor.perfil.nombre_usuario %}<a href="{% url 'perfil_publico' aviso.actor.perfil.nombre_usuario %}"><strong>{{ nombre }}</strong></a>{% else %}<strong>{{ nombre }}</strong>{% endif %}
+                            {% if aviso.tipo == "seguir" %}te empezó a seguir.
+                            {% elif aviso.tipo == "apoyo" %}apoyó tu día ❤️
+                            {% else %}te animó: «{{ aviso.texto_frase }}»{% endif %}
+                            <span class="suave-chico">· hace {{ aviso.creado|timesince }}</span>
+                        </span>
+                    {% endwith %}
+                </li>
+            {% empty %}
+                <li class="suave">Todavía no tenés avisos.</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

@@ -10,6 +10,14 @@ SECCIONES = {
     "archivados": "mis_habiticos",
     "eliminar_habito": "mis_habiticos",
     "calendario": "calendario",
+    "comunidad": "comunidad",
+    "recordatorios": "recordatorios",
+    "buscar": "comunidad",
+    "avisos": "comunidad",
+    "perfil_publico": "comunidad",
+    "seguidores": "comunidad",
+    "siguiendo": "comunidad",
+    "reportar": "comunidad",
     "identidades": "identidades",
     "perfil": "perfil",
     "editar_perfil": "perfil",
@@ -18,7 +26,7 @@ SECCIONES = {
 
 # Las que en el celular están dentro de "Más" (la barra de abajo solo tiene Hoy y Mis
 # habiticos; Mi perfil se abre desde la franja de arriba)
-EN_MAS = {"calendario", "identidades"}
+EN_MAS = {"calendario", "identidades", "recordatorios"}
 
 
 def seccion(request):
