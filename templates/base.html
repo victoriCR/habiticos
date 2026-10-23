@@ -102,9 +102,11 @@
     <div class="contenido">
         <main class="{% block clase_main %}{% endblock %}">
             {% for mensaje in messages %}
-                {# Solo errores; los avisos de allauth ("Has iniciado sesión…") se descartan #}
+                {# Errores y avisos propios (etiqueta "habiticos"); los de allauth ("Has iniciado sesión…") se descartan #}
                 {% if mensaje.level_tag == "error" %}
                     <p class="error aviso" role="alert">{{ mensaje }}</p>
+                {% elif "habiticos" in mensaje.extra_tags %}
+                    <p class="aviso aviso-info" role="status">{{ mensaje }}</p>
                 {% endif %}
             {% endfor %}
             {% if user.is_authenticated %}

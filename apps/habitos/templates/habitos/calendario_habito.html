@@ -39,6 +39,15 @@
                             {% if dia.hecho %}<span>✅</span>{% endif %}
                             {% if dia.marcado %}<span class="hora-celda" title="{{ dia.marcado|time:'g:i a' }}"><span class="hora-larga">{{ dia.marcado|time:"g:i a" }}</span><span class="hora-corta">{{ dia.marcado|time:"H:i" }}</span></span>{% endif %}
                         </button>
+                    {% elif dia.por_que_no %}
+                        {# Marcado pero ya no se puede cambiar: al tocarlo, se explica por qué #}
+                        <button type="button" class="celda informativa{% if dia.hoy %} hoy{% endif %}"
+                                data-titulo="{{ dia.fecha|date:'l j \d\e F'|capfirst }}"
+                                data-mensaje="{{ dia.por_que_no }}">
+                            <span class="numero">{{ dia.fecha.day }}</span>
+                            <span>✅</span>
+                            {% if dia.marcado %}<span class="hora-celda" title="{{ dia.marcado|time:'g:i a' }}"><span class="hora-larga">{{ dia.marcado|time:"g:i a" }}</span><span class="hora-corta">{{ dia.marcado|time:"H:i" }}</span></span>{% endif %}
+                        </button>
                     {% else %}
                         <div class="celda{% if dia.futuro or dia.antes %} apagada{% endif %}{% if dia.hoy %} hoy{% endif %}"{% if dia.hecho %} title="Cumplido"{% endif %}>
                             <span class="numero">{{ dia.fecha.day }}</span>
@@ -60,15 +69,22 @@
             <p class="suave">
                 {{ habito.nombre }}
                 {% if habito.tiene_franja %}
-                    · Se puede marcar de {{ habito.hora_desde|time:"g:i a" }} a {{ habito.hora_hasta|time:"g:i a" }}
+                    <span id="dialogo-franja">· Se puede marcar de {{ habito.hora_desde|time:"g:i a" }} a {{ habito.hora_hasta|time:"g:i a" }}</span>
                 {% endif %}
             </p>
-            <div class="campo">
+            {# Modo explicación (día que ya no se puede cambiar) #}
+            <div id="dialogo-info" hidden>
+                <p id="dialogo-info-texto"></p>
+                <div class="acciones">
+                    <button class="boton principal" type="button" id="dialogo-entendido">Entendido</button>
+                </div>
+            </div>
+            <div class="campo" id="dialogo-campo">
                 <label for="dialogo-hora">Hora</label>
                 <input type="time" name="hora" id="dialogo-hora" required
                        {% if habito.tiene_franja %}data-min="{{ habito.hora_desde|time:'H:i' }}" data-max="{{ habito.hora_hasta|time:'H:i' }}"{% endif %}>
             </div>
-            <div class="acciones">
+            <div class="acciones" id="dialogo-acciones">
                 <button class="boton principal" type="submit" name="accion" value="guardar" id="dialogo-guardar">Marcar</button>
                 <button class="boton" type="submit" name="accion" value="desmarcar" id="dialogo-desmarcar" formnovalidate>Desmarcar</button>
                 <button class="boton" type="button" id="dialogo-cancelar">Cancelar</button>
@@ -89,7 +105,26 @@
             return String(ahora.getHours()).padStart(2, "0") + ":" + String(ahora.getMinutes()).padStart(2, "0");
         }
 
+        // El recuadro tiene dos modos: editar (marcar, cambiar la hora, desmarcar)
+        // o solo explicar por qué un día ya no se puede cambiar
+        function modo(explicar) {
+            document.getElementById("dialogo-info").hidden = !explicar;
+            document.getElementById("dialogo-campo").hidden = explicar;
+            document.getElementById("dialogo-acciones").hidden = explicar;
+            const franja = document.getElementById("dialogo-franja");
+            if (franja) franja.hidden = explicar;
+            campoHora.disabled = explicar;  // si no, "required" no dejaría cerrar
+        }
+
+        function explicar(celda) {
+            modo(true);
+            document.getElementById("dialogo-titulo").textContent = celda.dataset.titulo;
+            document.getElementById("dialogo-info-texto").textContent = celda.dataset.mensaje;
+            dialogo.showModal();
+        }
+
         function abrir(celda) {
+            modo(false);
             const { fecha, titulo, hora, hecho, esHoy } = celda.dataset;
             document.getElementById("dialogo-fecha").value = fecha;
             document.getElementById("dialogo-titulo").textContent = titulo;
@@ -110,6 +145,10 @@
         document.querySelectorAll(".celda.editable").forEach((celda) => {
             celda.addEventListener("click", () => abrir(celda));
         });
+        document.querySelectorAll(".celda.informativa").forEach((celda) => {
+            celda.addEventListener("click", () => explicar(celda));
+        });
         document.getElementById("dialogo-cancelar").addEventListener("click", () => dialogo.close());
+        document.getElementById("dialogo-entendido").addEventListener("click", () => dialogo.close());
     </script>
 {% endblock %}

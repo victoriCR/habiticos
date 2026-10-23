@@ -1483,8 +1483,18 @@ a.dato {
     font-size: 0.8rem;
 }
 
-/* Confirmado: no se puede tocar, pero se ve normal (está hecho, no bloqueado) */
-.habito.confirmado:disabled {
-    cursor: default;
-    opacity: 1;
+/* Confirmado: se ve normal; al tocarlo, un aviso explica que ya no se puede deshacer */
+.habito.confirmado {
+    cursor: help;
+}
+
+/* Aviso informativo (no es un error): por ejemplo, "✓ «Leer» ya está confirmado…" */
+.aviso-info {
+    border-color: var(--borde);
+    background: var(--superficie);
+}
+
+/* Calendario: día marcado que ya no se puede cambiar (al tocarlo, se explica por qué) */
+.celda.informativa {
+    cursor: help;
 }

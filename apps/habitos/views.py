@@ -403,6 +403,8 @@ def calendario_habito(request, pk):
                 # Hoy y ayer, salvo que ya estén confirmados (marcados hace más de 1 hora)
                 "editable": d in editables
                 and (d not in registros or registros[d].se_puede_deshacer()),
+                # Si está marcado pero ya no se puede cambiar: por qué (al tocarlo)
+                "por_que_no": por_que_no_se_cambia(registros.get(d), d in editables),
             }
             for d in semana
         ]
@@ -421,9 +423,25 @@ def calendario_habito(request, pk):
     )
 
 
+def por_que_no_se_cambia(registro, es_hoy_o_ayer):
+    """El texto para un día marcado que ya no se puede cambiar ("" si se puede, o si no está marcado)."""
+    if registro is None or (es_hoy_o_ayer and registro.se_puede_deshacer()):
+        return ""
+    marcado = (
+        f"✓ Marcado a las {time_format(timezone.localtime(registro.marcado), 'g:i a')}"
+        if registro.marcado
+        else "✓ Cumplido"
+    )
+    if not marcado.endswith("."):  # "p.m." ya termina en punto
+        marcado += "."
+    if es_hoy_o_ayer:
+        return f"{marcado} Ya está confirmado: solo se puede cambiar o deshacer durante la primera hora."
+    return f"{marcado} Solo se pueden cambiar hoy y ayer."
+
+
 def ya_confirmado(habito):
     return (
-        f"«{habito.nombre}» ya está confirmado: solo se puede deshacer o cambiar "
+        f"✓ «{habito.nombre}» ya está confirmado: solo se puede deshacer o cambiar "
         "durante la primera hora."
     )
 
@@ -451,7 +469,7 @@ def registrar_dia(request, pk):
 
     existente = habito.registros.filter(fecha=fecha).first()
     if existente and not existente.se_puede_deshacer():
-        messages.error(request, ya_confirmado(habito))
+        messages.info(request, ya_confirmado(habito), extra_tags="habiticos")
         return volver
 
     if accion == "desmarcar":
@@ -498,7 +516,7 @@ def marcar_habito(request, pk):
             # Durante la primera hora se puede deshacer, por si fue un error
             registro.delete()
         else:
-            messages.error(request, ya_confirmado(habito))
+            messages.info(request, ya_confirmado(habito), extra_tags="habiticos")
     elif habito.en_franja(ahora.time()):
         Registro.objects.get_or_create(habito=habito, fecha=ahora.date())
     else:

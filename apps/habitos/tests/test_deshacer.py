@@ -1,4 +1,4 @@
-from datetime import time, timedelta
+from datetime import datetime, time, timedelta
 from unittest import mock
 
 from django.test import TestCase
@@ -7,7 +7,7 @@ from django.utils import timezone
 from apps.habitos.models import Habito, Registro
 from apps.pruebas import a_las, crear_usuaria
 
-# El botón de un habitico hecho y confirmado (fijo, no se puede tocar)
+# El botón de un habitico hecho y confirmado (fijo: al tocarlo, solo muestra un aviso)
 CONFIRMADO = 'class="habito hecho confirmado"'
 
 
@@ -45,10 +45,20 @@ class DeshacerDuranteLaPrimeraHoraTests(TestCase):
         respuesta = self.hoy(14, 50)
         self.assertNotContains(respuesta, "Tocá para deshacer")
         self.assertContains(respuesta, CONFIRMADO)
-        # Aunque alguien mande el pedido igual, el servidor no lo permite
+        # Se puede tocar, pero no se deshace: un aviso (neutral, no de error) explica por qué
         respuesta = self.marcar(15, 0)
         self.assertTrue(self.leer.registros.exists())
-        self.assertContains(respuesta, "«Leer» ya está confirmado")
+        self.assertContains(
+            respuesta,
+            '<p class="aviso aviso-info" role="status">✓ «Leer» ya está confirmado: '
+            "solo se puede deshacer o cambiar durante la primera hora.</p>",
+            html=True,
+        )
+
+    def test_el_confirmado_no_esta_desactivado(self):
+        self.marcar(13, 50)
+        fila = self.hoy(14, 50).content.decode().split(CONFIRMADO)[1].split(">")[0]
+        self.assertNotIn("disabled", fila)
 
     def test_los_registros_anteriores_a_esta_regla_cuentan_como_confirmados(self):
         registro = Registro.objects.create(habito=self.leer, fecha=timezone.localdate())
@@ -105,3 +115,25 @@ class CalendarioConfirmadoTests(TestCase):
         self.registrar(1, 0, hora="22:00")
         self.assertIn(f'data-fecha="{self.ayer.isoformat()}"', self.calendario(1, 30))
         self.assertNotIn(f'data-fecha="{self.ayer.isoformat()}"', self.calendario(2, 30))
+
+    def test_al_tocar_un_dia_confirmado_se_explica_por_que(self):
+        self.registrar(1, 0, hora="22:00")
+        self.assertNotIn("celda informativa", self.calendario(1, 30))
+        pagina = self.calendario(2, 30)
+        self.assertIn("celda informativa", pagina)
+        self.assertIn(
+            "✓ Marcado a las 10:00 p.m. Ya está confirmado: solo se puede cambiar o "
+            "deshacer durante la primera hora.",
+            pagina,
+        )
+
+    def test_los_dias_anteriores_a_ayer_explican_que_solo_se_cambian_hoy_y_ayer(self):
+        anteayer = self.ayer - timedelta(days=1)
+        Registro.objects.create(
+            habito=self.cena, fecha=anteayer,
+            marcado=timezone.make_aware(datetime.combine(anteayer, time(19))),
+        )
+        pagina = self.en(12, 0, lambda: self.client.get(
+            f"/habitos/{self.cena.pk}/calendario/?mes={anteayer:%Y-%m}"
+        )).content.decode()
+        self.assertIn("✓ Marcado a las 7:00 p.m. Solo se pueden cambiar hoy y ayer.", pagina)
