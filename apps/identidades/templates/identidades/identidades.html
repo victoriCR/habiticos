@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Identidades · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <header class="encabezado">
+            <div>
+                <h1>🌱 ¿En quién querés convertirte?</h1>
+                <p class="suave">Elegí y ordená las identidades que querés construir, un habitico a la vez.</p>
+            </div>
+        </header>
+
+        <section class="grupo" data-ordenar="{% url 'ordenar_identidades' %}">
+            <header class="grupo-encabezado">
+                <h2>Mis identidades</h2>
+            </header>
+            <ul class="habitos ordenable">
+                {% for eleccion in elegidas %}
+                    {% with identidad=eleccion.identidad %}
+                        <li class="fila" data-id="{{ identidad.pk }}">
+                            <span class="asa" title="Arrastrá para ordenar" aria-hidden="true">⠿</span>
+                            <form class="crece" method="post" action="{% url 'elegir_identidad' identidad.pk %}">
+                                {% csrf_token %}
+                                {% if bienvenida %}<input type="hidden" name="bienvenida" value="1">{% endif %}
+                                <button class="habito identidad elegida" type="submit" aria-pressed="true" title="Tocá para quitarla">
+                                    <span class="emoji">{{ identidad.emoji }}</span>
+                                    <span class="nombre">{{ identidad.nombre }}</span>
+                                    <span class="marca">✓</span>
+                                </button>
+                            </form>
+                        </li>
+                    {% endwith %}
+                {% empty %}
+                    <li class="suave">Todavía no elegiste ninguna. Tocá una de abajo para empezar.</li>
+                {% endfor %}
+            </ul>
+            {% if elegidas|length > 1 %}
+                <p class="ayuda">Arrastrá ⠿ para ordenarlas: en ese orden aparecen los grupos en «Mis habiticos».</p>
+            {% endif %}
+        </section>
+
+        <section class="grupo">
+            <header class="grupo-encabezado">
+                <h2>Más identidades</h2>
+            </header>
+            <ul class="habitos">
+                {% for identidad in disponibles %}
+                    <li class="fila">
+                        {# Mismo ancho que el asa ⠿ de arriba, para que todo quede alineado #}
+                        <span class="asa-espacio" aria-hidden="true"></span>
+                        <form class="crece" method="post" action="{% url 'elegir_identidad' identidad.pk %}">
+                            {% csrf_token %}
+                            {% if bienvenida %}<input type="hidden" name="bienvenida" value="1">{% endif %}
+                            <button class="habito identidad" type="submit" aria-pressed="false" title="Tocá para elegirla">
+                                <span class="emoji">{{ identidad.emoji }}</span>
+                                <span class="nombre">{{ identidad.nombre }}</span>
+                                <span class="marca"></span>
+                            </button>
+                        </form>
+                    </li>
+                {% empty %}
+                    <li class="suave">Ya elegiste todas.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        {% if bienvenida %}
+            <div class="acciones">
+                <p class="ayuda">{{ elegidas|length }} identidad{{ elegidas|length|pluralize:"es" }} elegida{{ elegidas|length|pluralize }}</p>
+                <a class="boton principal" href="{% url 'inicio' %}">{% if elegidas %}Continuar →{% else %}Ahora no{% endif %}</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <script src="{% static 'js/ordenar.js' %}"></script>
+{% endblock %}

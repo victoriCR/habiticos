@@ -1,0 +1,54 @@
+{% load socialaccount static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Habiticos{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/habiticos.css' %}">
+</head>
+<body>
+    {% if user.is_authenticated %}
+        {% get_social_accounts user as cuentas %}
+        {% with foto=cuentas.google.0.get_avatar_url nombre=user.get_full_name|default:user.email %}
+            <aside class="barra">
+                <div class="barra-arriba">
+                    <div class="perfil">
+                        {% if foto %}
+                            <img class="avatar" src="{{ foto }}" alt="" referrerpolicy="no-referrer">
+                        {% else %}
+                            <span class="avatar" aria-hidden="true">{{ nombre|first|upper }}</span>
+                        {% endif %}
+                        <span class="perfil-nombre">{{ nombre }}</span>
+                    </div>
+                    {% with actual=request.resolver_match.url_name %}
+                        <nav class="nav">
+                            <a href="{% url 'inicio' %}"{% if actual == "inicio" %} aria-current="page"{% endif %}>Mis habiticos</a>
+                            <a href="{% url 'identidades' %}"{% if actual == "identidades" %} aria-current="page"{% endif %}>Identidades</a>
+                            <a href="{% url 'calendario' %}"{% if actual == "calendario" %} aria-current="page"{% endif %}>Calendario</a>
+                            <a href="{% url 'archivados' %}"{% if actual == "archivados" %} aria-current="page"{% endif %}>Archivados</a>
+                            <a href="{% url 'perfil' %}"{% if actual == "perfil" or actual == "editar_perfil" %} aria-current="page"{% endif %}>Mi perfil</a>
+                        </nav>
+                    {% endwith %}
+                </div>
+                <form method="post" action="{% url 'account_logout' %}">
+                    {% csrf_token %}
+                    <button class="boton" type="submit">Cerrar sesión</button>
+                </form>
+            </aside>
+        {% endwith %}
+    {% endif %}
+    <div class="contenido">
+        <main>
+            {% for mensaje in messages %}
+                {# Solo errores; los avisos de allauth ("Has iniciado sesión…") se descartan #}
+                {% if mensaje.level_tag == "error" %}
+                    <p class="error aviso" role="alert">{{ mensaje }}</p>
+                {% endif %}
+            {% endfor %}
+            {% block contenido %}{% endblock %}
+        </main>
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

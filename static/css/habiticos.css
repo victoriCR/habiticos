@@ -1,0 +1,955 @@
+/* Estilos de Habiticos (antes estaban dentro de templates/base.html) */
+
+:root {
+    --fondo: #fafafa;
+    --texto: #1a1a1a;
+    --suave: #6b6b6b;
+    --borde: #e2e2e2;
+    --superficie: #ffffff;
+    --error: #c0362c;
+    /* Acento verde: solo para lo logrado (identidades elegidas, hábitos cumplidos) */
+    --acento: #2b8a4b;
+    --acento-suave: #edf6f0;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fondo: #141414;
+        --texto: #f2f2f2;
+        --suave: #9a9a9a;
+        --borde: #2e2e2e;
+        --superficie: #1e1e1e;
+        --error: #ff7b6e;
+        --acento: #5cc887;
+        --acento-suave: #1b3123;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+}
+
+.contenido {
+    flex: 1;
+    /* min-width: 0 deja que se encoja: así lo ancho (como la tabla
+       del calendario) hace scroll dentro de su recuadro, no en toda la página */
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+    padding: 16px;
+}
+
+/* Con sesión iniciada: contenido arriba a la izquierda, junto a la barra */
+.barra + .contenido {
+    place-items: start;
+    padding: 40px 48px;
+}
+
+.barra + .contenido main {
+    max-width: none;
+}
+
+/* Formularios y calendario de un hábito no necesitan todo el ancho */
+.columna {
+    max-width: 560px;
+}
+
+/* Título a la izquierda, botón a la derecha */
+.encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+/* Calendario: ‹ Octubre 2026 › */
+.mes-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mes-nav .lateral {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 1.2rem;
+}
+
+.mes-nav .volver-hoy {
+    width: auto;
+    padding: 0 12px;
+    font-size: 0.9rem;
+}
+
+.titulo-mes {
+    min-width: 130px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Opción A: calendario de un hábito */
+.calendario {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.dia-semana {
+    color: var(--suave);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.celda {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    aspect-ratio: 1;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+}
+
+.celda .numero {
+    color: var(--suave);
+    font-size: 0.75rem;
+}
+
+.celda.fuera {
+    visibility: hidden;
+}
+
+.celda.apagada {
+    opacity: 0.4;
+}
+
+.celda.hoy {
+    outline: 2px solid var(--texto);
+    outline-offset: -1px;
+}
+
+.hora-celda {
+    color: var(--suave);
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+/* Hoy y ayer: casillas que se pueden tocar */
+button.celda {
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.celda.editable {
+    border-style: dashed;
+    border-color: var(--suave);
+}
+
+.celda.editable:hover {
+    border-style: solid;
+    border-color: var(--texto);
+}
+
+/* Recuadro para marcar o corregir un día */
+.dialogo {
+    width: min(360px, calc(100% - 32px));
+    padding: 24px;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    background: var(--superficie);
+    color: var(--texto);
+}
+
+.dialogo::backdrop {
+    background: rgb(0 0 0 / 0.4);
+}
+
+.dialogo h2 {
+    margin: 0 0 4px;
+    font-size: 1.2rem;
+}
+
+.dialogo .suave {
+    margin-bottom: 20px;
+}
+
+/* Opción B: tabla del mes */
+.tabla-mes {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+}
+
+.tabla-mes table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.tabla-mes th,
+.tabla-mes td {
+    min-width: 28px;
+    padding: 8px 2px;
+    border-bottom: 1px solid var(--borde);
+    text-align: center;
+}
+
+/* Sin línea solo en la última fila del cuerpo (la cabecera sí la lleva) */
+.tabla-mes tbody tr:last-child th,
+.tabla-mes tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-mes thead th {
+    color: var(--texto);
+    font-weight: 500;
+}
+
+/* Color en vez de opacity: opacity crea una capa nueva que se
+   pintaría encima de la columna fija de los hábitos */
+.tabla-mes thead th.finde {
+    color: var(--suave);
+}
+
+.tabla-mes .hoy {
+    background: var(--fondo);
+    color: var(--texto);
+    font-weight: 600;
+}
+
+.tabla-mes .col-habito {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    padding: 8px 16px;
+    border-right: 1px solid var(--borde);
+    background: var(--superficie);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tabla-mes .col-habito a {
+    color: var(--texto);
+    text-decoration: none;
+}
+
+.tabla-mes .col-habito a:hover {
+    text-decoration: underline;
+}
+
+.tabla-mes .punto {
+    color: var(--suave);
+}
+
+.tabla-mes .vacio {
+    padding: 16px;
+}
+
+.encabezado .suave {
+    margin: 0;
+}
+
+.encabezado .boton {
+    flex-shrink: 0;
+    width: auto;
+}
+
+.barra {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
+    width: 240px;
+    height: 100vh;
+    padding: 24px 16px;
+    border-right: 1px solid var(--borde);
+    background: var(--superficie);
+}
+
+.perfil {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--borde);
+    object-fit: cover;
+    font-weight: 600;
+}
+
+.perfil-nombre {
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nav {
+    display: grid;
+    gap: 4px;
+    margin-top: 32px;
+}
+
+.nav a {
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--suave);
+    text-decoration: none;
+}
+
+.nav a:hover {
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+.nav a[aria-current="page"] {
+    background: var(--texto);
+    color: var(--fondo);
+    font-weight: 500;
+}
+
+@media (max-width: 720px) {
+    body {
+        flex-direction: column;
+    }
+
+    .barra {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        width: auto;
+        height: auto;
+        padding: 12px 16px;
+        border-right: none;
+        border-bottom: 1px solid var(--borde);
+    }
+
+    .barra .boton {
+        width: auto;
+        padding: 8px 12px;
+    }
+
+    .barra + .contenido {
+        padding: 24px 16px;
+    }
+
+    /* En el móvil: foto y nombre | cerrar sesión, y debajo los enlaces */
+    .barra-arriba {
+        display: contents;
+    }
+
+    .perfil {
+        flex: 1;
+    }
+
+    .nav {
+        order: 3;
+        display: flex;
+        width: 100%;
+        margin-top: 0;
+    }
+}
+
+main {
+    width: 100%;
+    min-width: 0;
+    max-width: 360px;
+}
+
+h1 {
+    margin: 0 0 4px;
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.suave {
+    margin: 0 0 32px;
+    color: var(--suave);
+}
+
+.boton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.boton:hover {
+    border-color: var(--suave);
+}
+
+.boton.principal {
+    background: var(--texto);
+    border-color: var(--texto);
+    color: var(--fondo);
+}
+
+.boton.principal:hover {
+    opacity: 0.85;
+}
+
+/* "🔒 Nuevo habitico": se puede tocar (lleva a la explicación), pero no invita */
+.boton.bloqueado {
+    border-style: dashed;
+    color: var(--suave);
+}
+
+/* Acciones que borran para siempre */
+.boton.peligro,
+.lateral.peligro {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+.boton.peligro:hover,
+.lateral.peligro:hover {
+    border-color: var(--error);
+    background: var(--error);
+    color: var(--fondo);
+}
+
+/* La salida discreta del bloqueo suave ("Crear de todas formas →") */
+.saltar {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.enlace {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--suave);
+    font: inherit;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.enlace:hover {
+    color: var(--texto);
+}
+
+/* Filas informativas (no se tocan), como en la explicación del bloqueo */
+.habito.pendiente {
+    cursor: default;
+}
+
+.habito.pendiente:hover {
+    border-color: var(--borde);
+}
+
+.habitos {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fila {
+    display: flex;
+    gap: 8px;
+}
+
+/* La parte de la fila que ocupa el espacio sobrante */
+.fila > .crece {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Asa para arrastrar ⠿ */
+.asa {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    color: var(--suave);
+    font-size: 1.2rem;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.asa:hover {
+    color: var(--texto);
+}
+
+.asa:active {
+    cursor: grabbing;
+}
+
+/* El hueco donde caerá la fila mientras se arrastra */
+.arrastrando {
+    opacity: 0.4;
+}
+
+.lateral {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: 0 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+    color: var(--suave);
+    font: inherit;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.lateral:hover {
+    border-color: var(--suave);
+    color: var(--texto);
+}
+
+.zona {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--borde);
+}
+
+.zona .suave {
+    margin-bottom: 16px;
+}
+
+.habito {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.habito:hover {
+    border-color: var(--suave);
+}
+
+/* Fuera de su franja horaria: no se puede marcar */
+.habito:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.habito:disabled:hover {
+    border-color: var(--borde);
+}
+
+.franja {
+    color: var(--suave);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.marca {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--suave);
+    border-radius: 50%;
+    font-size: 0.8rem;
+}
+
+.habito.hecho .marca {
+    border-color: var(--acento);
+    background: var(--acento);
+    color: var(--fondo);
+}
+
+/* Grupos de "Mis hábitos" (uno por identidad) y secciones de Identidades */
+.grupo {
+    margin-bottom: 32px;
+}
+
+/* Mi perfil */
+.vista-previa {
+    margin: 0 0 16px;
+}
+
+.tarjeta-perfil {
+    padding: 24px;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    background: var(--superficie);
+}
+
+.perfil-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar-grande {
+    width: 88px;
+    height: 88px;
+    font-size: 2rem;
+}
+
+.perfil-datos {
+    flex: 1;
+    min-width: 0;
+}
+
+.perfil-datos h1 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.arroba,
+.frase {
+    margin: 2px 0 0;
+}
+
+.arroba {
+    color: var(--suave);
+}
+
+.arroba a {
+    color: var(--texto);
+}
+
+.boton.editar-perfil {
+    width: auto;
+    padding: 8px 16px;
+}
+
+.datos-perfil {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.dato {
+    padding: 14px 8px;
+    border-radius: 12px;
+    background: var(--fondo);
+    text-align: center;
+}
+
+.dato strong {
+    display: block;
+    font-size: 1.3rem;
+}
+
+.dato span {
+    color: var(--suave);
+    font-size: 0.8rem;
+}
+
+.tarjeta-perfil h2 {
+    margin: 24px 0 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--fondo);
+    font-size: 0.9rem;
+}
+
+.habitico-publico {
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--fondo);
+}
+
+.habitico-publico-linea {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.suave-chico {
+    color: var(--suave);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Barra de los últimos 7 días */
+.progreso {
+    height: 8px;
+    margin-top: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--borde);
+}
+
+.progreso span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--acento);
+}
+
+/* "Eliminados recientemente", al final de Archivados */
+.papelera {
+    margin-top: 48px;
+}
+
+.papelera .ayuda {
+    margin: 0 0 12px;
+}
+
+.racha.error {
+    color: var(--error);
+}
+
+.grupo-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 16px;
+    margin-bottom: 12px;
+}
+
+.grupo-encabezado h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.votos {
+    color: var(--suave);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.vacio-grupo {
+    padding: 12px 14px;
+    border: 1px dashed var(--borde);
+    border-radius: 10px;
+    color: var(--suave);
+}
+
+.vacio-grupo a {
+    color: var(--texto);
+}
+
+/* Tarjetas de identidad: ○ sin elegir, ✓ verde elegida */
+.identidad .emoji {
+    font-size: 1.2rem;
+}
+
+.identidad .marca {
+    margin-left: auto;
+}
+
+.identidad.elegida {
+    border-color: var(--acento);
+    background: var(--acento-suave);
+}
+
+.identidad.elegida .marca {
+    border-color: var(--acento);
+    background: var(--acento);
+    color: var(--fondo);
+}
+
+.asa-espacio {
+    flex-shrink: 0;
+    width: 24px;
+}
+
+/* Opciones como tarjetas (por ejemplo, la identidad de un hábito) */
+.opciones {
+    min-width: 0;
+    margin: 0 0 16px;
+    padding: 0;
+    border: none;
+}
+
+.opciones legend {
+    margin-bottom: 6px;
+    padding: 0;
+    font-weight: 500;
+}
+
+/* ".opciones .opcion" (y no solo ".opcion") para ganarle a ".campo label",
+   que pondría el círculo y el texto uno encima del otro */
+.opciones .opcion {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.opciones .opcion:hover {
+    border-color: var(--suave);
+}
+
+/* El círculo de la casilla real se oculta: se ve la .marca (○ / ✓) */
+.opciones .opcion input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.opcion input:checked + .marca {
+    border-color: var(--acento);
+    background: var(--acento);
+    color: var(--fondo);
+}
+
+.opcion input:checked + .marca::after {
+    content: "✓";
+}
+
+.opcion:has(input:checked) {
+    border-color: var(--acento);
+    background: var(--acento-suave);
+}
+
+.opcion:has(input:focus-visible) {
+    outline: 2px solid var(--texto);
+    outline-offset: 2px;
+}
+
+.hora {
+    color: var(--suave);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.racha {
+    margin-left: auto;
+    color: var(--suave);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.estadisticas {
+    margin: 24px 0 0;
+    font-size: 0.9rem;
+}
+
+.habito.hecho .nombre {
+    color: var(--suave);
+    text-decoration: line-through;
+}
+
+.acciones {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.campo {
+    margin-bottom: 16px;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.campo input,
+.campo textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+    outline: 2px solid var(--texto);
+    outline-offset: 1px;
+}
+
+.error {
+    margin: 6px 0 0;
+    color: var(--error);
+    font-size: 0.9rem;
+}
+
+.ayuda {
+    margin: 6px 0 0;
+    color: var(--suave);
+    font-size: 0.85rem;
+}
+
+/* Mensaje en un recuadro, arriba del contenido */
+.aviso {
+    margin: 0 0 24px;
+    padding: 12px 14px;
+    border: 1px solid var(--error);
+    border-radius: 10px;
+}

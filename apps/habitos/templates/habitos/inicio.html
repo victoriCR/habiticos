@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Mis habiticos · Habiticos{% endblock %}
+
+{% block contenido %}
+    <header class="encabezado">
+        <div>
+            <h1>Mis habiticos</h1>
+            <p class="suave">Hoy, {{ hoy|date:"l j \d\e F \d\e Y" }}</p>
+        </div>
+        {% if sumar_bloqueado %}
+            {# Bloqueo suave: lleva a la explicación (y desde ahí se puede crear igual) #}
+            <a class="boton bloqueado" href="{% url 'crear_habito' %}" title="Todos tus habiticos necesitan 🔥 7 días seguidos">🔒 Nuevo habitico</a>
+        {% else %}
+            <a class="boton principal" href="{% url 'crear_habito' %}">+ Nuevo habitico</a>
+        {% endif %}
+    </header>
+
+    <div data-ordenar="{% url 'ordenar_habitos' %}">
+        {% for grupo in grupos %}
+            <section class="grupo">
+                {% if grupo.identidad %}
+                    <header class="grupo-encabezado">
+                        <h2>{{ grupo.identidad.emoji }} {{ grupo.identidad.nombre }}</h2>
+                        <span class="votos" title="Cada habitico cumplido es un voto por la persona que querés ser">🗳️ {{ grupo.votos }} voto{{ grupo.votos|pluralize }} esta semana</span>
+                    </header>
+                {% elif hay_identidades %}
+                    <header class="grupo-encabezado">
+                        <h2>Otros habiticos</h2>
+                    </header>
+                {% endif %}
+
+                <ul class="habitos ordenable">
+                    {% for habito in grupo.habitos %}
+                        {% include "habitos/_fila_habito.html" %}
+                    {% empty %}
+                        {% if grupo.identidad %}
+                            <li class="vacio-grupo">
+                                Todavía no tiene habiticos.
+                                <a href="{% url 'crear_habito' %}?identidad={{ grupo.identidad.pk }}">+ Agregar uno</a>
+                            </li>
+                        {% else %}
+                            <li class="suave">Todavía no tenés habiticos.</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <script src="{% static 'js/ordenar.js' %}"></script>
+{% endblock %}

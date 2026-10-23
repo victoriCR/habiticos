@@ -1,0 +1,20 @@
+# Secretos: NUNCA al repositorio (la plantilla .env.example sí)
+.env
+
+# Entorno virtual (se recrea con: pip install -r requirements.txt)
+.venv/
+
+# Base de datos local, con datos reales
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos que genera Python
+__pycache__/
+*.pyc
+
+# Lo que junta "collectstatic" (se genera en el servidor)
+staticfiles/
+
+# Sistema y editor
+.DS_Store
+.vscode/

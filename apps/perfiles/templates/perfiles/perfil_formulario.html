@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Editar perfil · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <h1>Editar perfil</h1>
+        <p class="suave">Tu nombre y tu foto vienen de tu cuenta de Google.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for campo in form %}
+                <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.help_text %}
+                        <p class="ayuda">{{ campo.help_text }}</p>
+                    {% endif %}
+                    {% for error in campo.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="acciones">
+                <button class="boton principal" type="submit">Guardar</button>
+                <a class="boton" href="{% url 'perfil' %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

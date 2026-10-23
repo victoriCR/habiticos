@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ habito.nombre }} · Calendario · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <header class="encabezado">
+            <div>
+                <h1>{{ habito.nombre }}</h1>
+                <p class="suave">
+                    🔥 Racha actual: {{ estadisticas.racha }}
+                    · Mejor: {{ estadisticas.mejor }}
+                    · Total: {{ estadisticas.total }}
+                </p>
+            </div>
+            {% include "habitos/_mes.html" %}
+        </header>
+
+        <div class="calendario">
+            {% for letra in "LMXJVSD" %}
+                <span class="dia-semana">{{ letra }}</span>
+            {% endfor %}
+            {% for semana in semanas %}
+                {% for dia in semana %}
+                    {% if not dia.en_mes %}
+                        <div class="celda fuera" aria-hidden="true"></div>
+                    {% elif dia.editable %}
+                        {# Hoy y ayer: se pueden tocar para marcar, cambiar la hora o desmarcar #}
+                        <button type="button"
+                                class="celda editable{% if dia.hoy %} hoy{% endif %}"
+                                data-fecha="{{ dia.fecha|date:'Y-m-d' }}"
+                                data-titulo="{{ dia.fecha|date:'l j \d\e F'|capfirst }}"
+                                data-hora="{% if dia.marcado %}{{ dia.marcado|time:'H:i' }}{% endif %}"
+                                data-hecho="{{ dia.hecho|yesno:'1,' }}"
+                                data-es-hoy="{{ dia.hoy|yesno:'1,' }}"
+                                aria-label="{{ dia.fecha|date:'j \d\e F' }}: {{ dia.hecho|yesno:'cumplido,sin marcar' }}. Tocá para modificar.">
+                            <span class="numero">{{ dia.fecha.day }}</span>
+                            {% if dia.hecho %}<span>✅</span>{% endif %}
+                            {% if dia.marcado %}<span class="hora-celda">{{ dia.marcado|time:"g:i a" }}</span>{% endif %}
+                        </button>
+                    {% else %}
+                        <div class="celda{% if dia.futuro or dia.antes %} apagada{% endif %}{% if dia.hoy %} hoy{% endif %}"{% if dia.hecho %} title="Cumplido"{% endif %}>
+                            <span class="numero">{{ dia.fecha.day }}</span>
+                            {% if dia.hecho %}<span>✅</span>{% endif %}
+                            {% if dia.marcado %}<span class="hora-celda">{{ dia.marcado|time:"g:i a" }}</span>{% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <p class="ayuda">Podés tocar hoy y ayer para marcarlos a otra hora, cambiar la hora o desmarcarlos.</p>
+    </div>
+
+    <dialog class="dialogo" id="dialogo-dia" aria-labelledby="dialogo-titulo">
+        <form method="post" action="{% url 'registrar_dia' habito.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="fecha" id="dialogo-fecha">
+            <h2 id="dialogo-titulo"></h2>
+            <p class="suave">
+                {{ habito.nombre }}
+                {% if habito.tiene_franja %}
+                    · Se puede marcar de {{ habito.hora_desde|time:"g:i a" }} a {{ habito.hora_hasta|time:"g:i a" }}
+                {% endif %}
+            </p>
+            <div class="campo">
+                <label for="dialogo-hora">Hora</label>
+                <input type="time" name="hora" id="dialogo-hora" required
+                       {% if habito.tiene_franja %}data-min="{{ habito.hora_desde|time:'H:i' }}" data-max="{{ habito.hora_hasta|time:'H:i' }}"{% endif %}>
+            </div>
+            <div class="acciones">
+                <button class="boton principal" type="submit" name="accion" value="guardar" id="dialogo-guardar">Marcar</button>
+                <button class="boton" type="submit" name="accion" value="desmarcar" id="dialogo-desmarcar" formnovalidate>Desmarcar</button>
+                <button class="boton" type="button" id="dialogo-cancelar">Cancelar</button>
+            </div>
+        </form>
+    </dialog>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const dialogo = document.getElementById("dialogo-dia");
+        const campoHora = document.getElementById("dialogo-hora");
+        const botonGuardar = document.getElementById("dialogo-guardar");
+        const botonDesmarcar = document.getElementById("dialogo-desmarcar");
+
+        function horaActual() {
+            const ahora = new Date();
+            return String(ahora.getHours()).padStart(2, "0") + ":" + String(ahora.getMinutes()).padStart(2, "0");
+        }
+
+        function abrir(celda) {
+            const { fecha, titulo, hora, hecho, esHoy } = celda.dataset;
+            document.getElementById("dialogo-fecha").value = fecha;
+            document.getElementById("dialogo-titulo").textContent = titulo;
+
+            // Límites del selector: la franja del hábito y, si es hoy, no después de ahora.
+            // (El servidor vuelve a comprobarlo todo.)
+            let max = campoHora.dataset.max || "23:59";
+            if (esHoy && horaActual() < max) max = horaActual();
+            campoHora.min = campoHora.dataset.min || "00:00";
+            campoHora.max = max;
+
+            campoHora.value = hora || (esHoy && horaActual() >= campoHora.min ? max : "");
+            botonGuardar.textContent = hecho ? "Guardar hora" : "Marcar";
+            botonDesmarcar.hidden = !hecho;
+            dialogo.showModal();
+        }
+
+        document.querySelectorAll(".celda.editable").forEach((celda) => {
+            celda.addEventListener("click", () => abrir(celda));
+        });
+        document.getElementById("dialogo-cancelar").addEventListener("click", () => dialogo.close());
+    </script>
+{% endblock %}

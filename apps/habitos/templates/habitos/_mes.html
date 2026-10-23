@@ -1,0 +1,8 @@
+<nav class="mes-nav" aria-label="Cambiar de mes">
+    {% if not es_este_mes %}
+        <a class="lateral volver-hoy" href="?">Hoy</a>
+    {% endif %}
+    <a class="lateral" href="?mes={{ anterior|date:'Y-m' }}" aria-label="Mes anterior">‹</a>
+    <span class="titulo-mes">{{ primero|date:"F Y"|capfirst }}</span>
+    <a class="lateral" href="?mes={{ siguiente|date:'Y-m' }}" aria-label="Mes siguiente">›</a>
+</nav>

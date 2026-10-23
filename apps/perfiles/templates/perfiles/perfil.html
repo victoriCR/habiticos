@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mi perfil · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <p class="ayuda vista-previa">👀 Así te van a ver los demás. Solo se muestran tus habiticos públicos.</p>
+
+        <div class="tarjeta-perfil">
+            <header class="perfil-cabecera">
+                {% if foto %}
+                    <img class="avatar avatar-grande" src="{{ foto }}" alt="" referrerpolicy="no-referrer">
+                {% else %}
+                    <span class="avatar avatar-grande" aria-hidden="true">{{ user.get_full_name|default:"?"|first|upper }}</span>
+                {% endif %}
+                <div class="perfil-datos">
+                    {# Nunca el email: el perfil es público #}
+                    <h1>{{ user.get_full_name|default:"Sin nombre" }}</h1>
+                    {% if perfil.nombre_usuario %}
+                        <p class="arroba">@{{ perfil.nombre_usuario }}</p>
+                    {% else %}
+                        <p class="arroba"><a href="{% url 'editar_perfil' %}">Elegí tu @usuario</a></p>
+                    {% endif %}
+                    {% if perfil.frase %}<p class="frase">{{ perfil.frase }}</p>{% endif %}
+                </div>
+                <a class="boton editar-perfil" href="{% url 'editar_perfil' %}">Editar perfil</a>
+            </header>
+
+            <div class="datos-perfil">
+                <div class="dato">
+                    <strong>{{ publicos|length }}</strong>
+                    <span>Habitico{{ publicos|length|pluralize }}</span>
+                </div>
+                <div class="dato">
+                    <strong>{% if constancia is not None %}{{ constancia }}%{% else %}—{% endif %}</strong>
+                    <span title="Días cumplidos en los últimos 30 días">Constancia</span>
+                </div>
+                <div class="dato">
+                    <strong>🔥 {{ mejor_racha }}</strong>
+                    <span>Mejor racha</span>
+                </div>
+            </div>
+
+            <h2>Mis identidades</h2>
+            {% if identidades %}
+                <ul class="chips">
+                    {% for identidad in identidades %}
+                        <li class="chip">{{ identidad.emoji }} {{ identidad.nombre }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="suave">Todavía no elegiste identidades. <a href="{% url 'identidades' %}">Elegilas acá.</a></p>
+            {% endif %}
+
+            <h2>Mis habiticos públicos</h2>
+            {% for habito in publicos %}
+                <div class="habitico-publico">
+                    <div class="habitico-publico-linea">
+                        <span>{% if habito.identidad %}{{ habito.identidad.emoji }} {% endif %}{{ habito.nombre }}</span>
+                        <span class="suave-chico">{{ habito.semana }}/7 días</span>
+                    </div>
+                    <div class="progreso" role="progressbar" aria-label="{{ habito.nombre }}: {{ habito.semana }} de los últimos 7 días"
+                         aria-valuemin="0" aria-valuemax="7" aria-valuenow="{{ habito.semana }}">
+                        <span style="width: {% widthratio habito.semana 7 100 %}%"></span>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="suave">Todavía no tenés habiticos públicos. Para mostrar uno, activá «Público» al editarlo.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

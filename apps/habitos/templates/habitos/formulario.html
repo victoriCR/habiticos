@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <h1>{{ titulo }}</h1>
+        {% if habito %}
+            <p class="suave">{% if habito.activo %}Cambiá el nombre o la descripción.{% else %}Este habitico está archivado.{% endif %}</p>
+        {% else %}
+            <p class="suave">¿Qué querés empezar a hacer?</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for error in form.non_field_errors %}
+                <p class="error aviso">{{ error }}</p>
+            {% endfor %}
+            {% for campo in form %}
+                {% if campo.widget_type == "checkbox" %}
+                    {# Un sí/no (como «Público») con la misma tarjeta ○ / ✓ verde #}
+                    <div class="campo opciones">
+                        <label class="opcion">
+                            {{ campo }}
+                            <span class="marca" aria-hidden="true"></span>
+                            <span><strong>{{ campo.label }}</strong>{% if campo.help_text %} · <span class="suave-chico">{{ campo.help_text }}</span>{% endif %}</span>
+                        </label>
+                    </div>
+                {% elif campo.widget_type == "radioselect" %}
+                    {# Opciones como tarjetas para tocar (○ / ✓ verde) #}
+                    <fieldset class="campo opciones">
+                        <legend>{{ campo.label }}</legend>
+                        {% for opcion in campo %}
+                            <label class="opcion">
+                                {{ opcion.tag }}
+                                <span class="marca" aria-hidden="true"></span>
+                                <span>{{ opcion.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                        {% if campo.help_text %}
+                            <p class="ayuda">{{ campo.help_text }}</p>
+                        {% endif %}
+                        {% for error in campo.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </fieldset>
+                {% else %}
+                    <div class="campo">
+                        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                        {{ campo }}
+                        {% if campo.help_text %}
+                            <p class="ayuda">{{ campo.help_text }}</p>
+                        {% endif %}
+                        {% for error in campo.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="acciones">
+                <button class="boton principal" type="submit">Guardar</button>
+                {% if habito and not habito.activo %}
+                    <a class="boton" href="{% url 'archivados' %}">Cancelar</a>
+                {% else %}
+                    <a class="boton" href="{% url 'inicio' %}">Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if estadisticas %}
+            <p class="suave estadisticas">
+                Racha actual: {{ estadisticas.racha }} día{{ estadisticas.racha|pluralize }}
+                · Mejor racha: {{ estadisticas.mejor }} día{{ estadisticas.mejor|pluralize }}
+                · Total: {{ estadisticas.total }} día{{ estadisticas.total|pluralize }}
+                · <a href="{% url 'calendario_habito' habito.pk %}">Ver calendario</a>
+            </p>
+        {% endif %}
+
+        {% if habito %}
+            <div class="zona">
+                {% if habito.activo %}
+                    <p class="suave">Al archivarlo dejará de aparecer en tu lista. Su historial se conserva y podés restaurarlo cuando quieras.</p>
+                    <form method="post" action="{% url 'archivar_habito' habito.pk %}">
+                        {% csrf_token %}
+                        <button class="boton" type="submit">Archivar habitico</button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'restaurar_habito' habito.pk %}">
+                        {% csrf_token %}
+                        <button class="boton" type="submit">Restaurar habitico</button>
+                    </form>
+                    <div class="acciones">
+                        <a class="boton peligro" href="{% url 'eliminar_habito' habito.pk %}">Eliminar habitico</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block titulo %}Archivados · Habiticos{% endblock %}
+
+{% block contenido %}
+    <h1>Archivados</h1>
+    <p class="suave">Habiticos que pausaste. Su historial se guarda para siempre, salvo que los elimines.</p>
+
+    <ul class="habitos">
+        {% for habito in habitos %}
+            <li class="fila">
+                <a class="habito crece" href="{% url 'editar_habito' habito.pk %}">
+                    <span class="nombre">{{ habito.nombre }}</span>
+                </a>
+                <form method="post" action="{% url 'restaurar_habito' habito.pk %}">
+                    {% csrf_token %}
+                    <button class="lateral" type="submit">Restaurar</button>
+                </form>
+                <a class="lateral peligro" href="{% url 'eliminar_habito' habito.pk %}" aria-label="Eliminar {{ habito.nombre }}">Eliminar</a>
+            </li>
+        {% empty %}
+            <li class="suave">No tenés habiticos archivados.</li>
+        {% endfor %}
+    </ul>
+
+    {% if papelera %}
+        <section class="grupo papelera">
+            <header class="grupo-encabezado">
+                <h2>🗑️ Eliminados recientemente</h2>
+            </header>
+            <p class="ayuda">Se borran para siempre a los {{ dias }} días. Si recuperás uno, vuelve a Archivados.</p>
+            <ul class="habitos">
+                {% for habito in papelera %}
+                    <li class="fila">
+                        <div class="habito pendiente crece">
+                            <span class="nombre">{{ habito.nombre }}</span>
+                            {% if habito.dias_restantes <= 7 %}
+                                <span class="racha error">Se borrará {% if habito.dias_restantes <= 0 %}hoy{% elif habito.dias_restantes == 1 %}mañana{% else %}en {{ habito.dias_restantes }} días{% endif %} a las {{ habito.se_borra_a|date:"g:i a" }}</span>
+                            {% else %}
+                                <span class="racha">Se borrará el {{ habito.se_borra_a|date:"j \d\e F \d\e Y, g:i a" }}</span>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'recuperar_habito' habito.pk %}">
+                            {% csrf_token %}
+                            <button class="lateral" type="submit">Recuperar</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block titulo %}Todavía no · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <h1>🔒 Todavía no es momento de sumar otro habitico</h1>
+        <p class="suave">
+            Para {% if habito %}restaurar «{{ habito.nombre }}»{% else %}crear uno nuevo{% endif %},
+            todos tus habiticos necesitan 🔥 {{ dias }} días seguidos.
+            Consolidá lo que tenés: un habitico a la vez.
+        </p>
+
+        <ul class="habitos">
+            {% for pendiente in pendientes %}
+                <li class="habito pendiente">
+                    <span class="nombre">{{ pendiente.nombre }}</span>
+                    <span class="racha">🔥 {{ pendiente.racha }} de {{ dias }} · falta{{ pendiente.faltan|pluralize:"n" }} {{ pendiente.faltan }} día{{ pendiente.faltan|pluralize }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="acciones">
+            <a class="boton principal" href="{% url 'inicio' %}">Entendido</a>
+        </div>
+
+        {# Bloqueo suave: se puede saltar, pero discretamente #}
+        <div class="saltar">
+            {% if habito %}
+                <form method="post" action="{% url 'restaurar_habito' habito.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="forzar" value="1">
+                    <button class="enlace" type="submit">Restaurar de todas formas →</button>
+                </form>
+            {% else %}
+                <a class="enlace" href="{% url 'crear_habito' %}?forzar=1">Crear de todas formas →</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block titulo %}Eliminar · Habiticos{% endblock %}
+
+{% block contenido %}
+    <div class="columna">
+        <h1>¿Eliminar «{{ habito.nombre }}»?</h1>
+        <p class="suave">
+            Se moverá a «Eliminados recientemente», al final de Archivados.
+            Podés recuperarlo durante {{ dias }} días; después se borrará para siempre,
+            {% if registros %}junto con sus {{ registros }} día{{ registros|pluralize }} cumplido{{ registros|pluralize }}.{% else %}con su historial.{% endif %}
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="acciones">
+                <button class="boton peligro" type="submit">Eliminar</button>
+                <a class="boton" href="{% url 'archivados' %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

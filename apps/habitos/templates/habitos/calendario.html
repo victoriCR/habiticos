@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block titulo %}Calendario · Habiticos{% endblock %}
+
+{% block contenido %}
+    <header class="encabezado">
+        <div>
+            <h1>Calendario</h1>
+            <p class="suave">Tocá un habitico para ver su calendario completo.</p>
+        </div>
+        {% include "habitos/_mes.html" %}
+    </header>
+
+    <div class="tabla-mes">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-habito" scope="col">Habiticos</th>
+                    {% for dia in dias %}
+                        <th scope="col" class="{% if dia == hoy %}hoy{% endif %}{% if dia.weekday >= 5 %} finde{% endif %}">{{ dia.day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in filas %}
+                    <tr>
+                        <th class="col-habito" scope="row">
+                            <a href="{% url 'calendario_habito' fila.habito.pk %}?mes={{ primero|date:'Y-m' }}">{{ fila.habito.nombre }}</a>
+                        </th>
+                        {% for dia in fila.dias %}
+                            <td class="{% if dia.hoy %}hoy{% endif %}"{% if dia.hecho %} title="{{ dia.fecha|date:'j \d\e F' }}: cumplido"{% endif %}>
+                                {% if dia.hecho %}✅{% elif not dia.futuro and not dia.antes %}<span class="punto">·</span>{% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="suave vacio" colspan="{{ dias|length|add:1 }}">Todavía no tenés habiticos.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
