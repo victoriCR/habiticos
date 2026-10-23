@@ -1,0 +1,16 @@
+{% load static %}{
+  "name": "Habiticos",
+  "short_name": "Habiticos",
+  "description": "Un habitico a la vez, un poquitico mejor cada día.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#fafafa",
+  "icons": [
+    {"src": "{% static 'iconos/icono-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "{% static 'iconos/icono-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "{% static 'iconos/icono-maskable-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

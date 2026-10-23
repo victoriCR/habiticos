@@ -58,7 +58,7 @@ class EliminarHabiticoTests(TestCase):
 
     def test_a_los_30_dias_se_borra_para_siempre(self):
         self.eliminar()
-        # (Se vuelve a iniciar sesión en cada fecha simulada: la sesión caduca a medianoche)
+        # (Se vuelve a iniciar sesión en cada fecha simulada: la sesión dura 7 días)
         dentro_de_29 = timezone.now() + timedelta(days=29)
         with mock.patch("django.utils.timezone.now", return_value=dentro_de_29):
             self.client.force_login(self.usuaria)

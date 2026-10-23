@@ -6,8 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block titulo %}Habiticos{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/habiticos.css' %}">
+
+    {# Ícono en la pestaña del navegador #}
+    <link rel="icon" href="{% static 'iconos/icono.svg' %}" type="image/svg+xml">
+    <link rel="icon" href="{% static 'iconos/favicon-32.png' %}" sizes="32x32" type="image/png">
+
+    {# App instalable (PWA): nombre, ícono y colores al agregarla a la pantalla de inicio #}
+    <link rel="manifest" href="{% url 'manifiesto' %}">
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)">
+    {# El iPhone todavía usa algunas etiquetas propias #}
+    <link rel="apple-touch-icon" href="{% static 'iconos/apple-touch-icon.png' %}">
+    <meta name="apple-mobile-web-app-title" content="Habiticos">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
-<body>
+<body data-pwa="{{ pwa_activa|yesno:'activa,inactiva' }}">
     {% if user.is_authenticated %}
         {% get_social_accounts user as cuentas %}
         {% with foto=cuentas.google.0.get_avatar_url nombre=user.get_full_name|default:user.email %}
@@ -49,9 +64,19 @@
                     <p class="error aviso" role="alert">{{ mensaje }}</p>
                 {% endif %}
             {% endfor %}
+            {% if user.is_authenticated %}
+                {# Cómo instalar la app; lo muestra static/js/pwa.js solo si hace falta #}
+                <div class="instalar" id="instalar" hidden>
+                    <span aria-hidden="true">📲</span>
+                    <span class="instalar-texto"></span>
+                    <button class="boton principal instalar-boton" type="button" hidden>Instalar</button>
+                    <button class="instalar-cerrar" type="button" aria-label="Cerrar aviso">×</button>
+                </div>
+            {% endif %}
             {% block contenido %}{% endblock %}
         </main>
     </div>
+    <script src="{% static 'js/pwa.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

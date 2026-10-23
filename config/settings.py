@@ -95,6 +95,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.pwa.contexto",  # pwa_activa: service worker solo en producción
             ],
         },
     },
@@ -203,6 +204,10 @@ ACCOUNT_EMAIL_VERIFICATION = "none"  # Google ya verifica el email
 
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+
+# La sesión dura 7 días desde que entrás (o hasta que cerrás sesión), como la
+# mayoría de las apps: con la app instalada en el teléfono no hay que entrar cada día
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
 
 # Correo de contacto que aparece en Privacidad y Términos (vacío: no se muestra)
 CONTACTO_EMAIL = os.environ.get("CONTACTO_EMAIL", "")

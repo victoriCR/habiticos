@@ -1,0 +1,21 @@
+{% load static %}<!doctype html>
+{# Página independiente (sin base.html): se guarda en el teléfono y no debe incluir datos de nadie #}
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sin conexión · Habiticos</title>
+    <link rel="stylesheet" href="{% static 'css/habiticos.css' %}">
+</head>
+<body>
+    <div class="contenido">
+        <main>
+            <h1>Sin conexión 🌱</h1>
+            <p class="suave">Habiticos necesita internet para mostrar y guardar tus habiticos. Cuando vuelvas a tener conexión, probá de nuevo.</p>
+            <div class="acciones">
+                <button class="boton principal" type="button" onclick="location.reload()">Reintentar</button>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

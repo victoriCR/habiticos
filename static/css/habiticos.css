@@ -1012,3 +1012,40 @@ h1 {
         display: none;
     }
 }
+
+/* "hidden" siempre esconde, aunque el elemento tenga display: flex (como .boton) */
+[hidden] {
+    display: none !important;
+}
+
+/* Aviso "📲 Instalá Habiticos" (lo muestra static/js/pwa.js) */
+.instalar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 12px 14px;
+    border: 1px solid var(--acento);
+    border-radius: 10px;
+    background: var(--acento-suave);
+    font-size: 0.95rem;
+}
+
+.instalar-texto {
+    flex: 1;
+}
+
+.instalar .instalar-boton {
+    width: auto;
+    padding: 6px 12px;
+}
+
+.instalar-cerrar {
+    padding: 0 4px;
+    border: none;
+    background: none;
+    color: var(--suave);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+}
