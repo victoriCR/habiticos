@@ -15,7 +15,7 @@ from apps.habitos.rachas import calcular_racha
 from apps.perfiles.models import Perfil
 from apps.perfiles.views import datos_de_perfil, foto_de
 
-from .models import FRASES, HITOS, Aviso, Bloqueo, DiaCompartido, Reaccion, Reporte, Seguimiento
+from .models import FRASES, HITOS, Aviso, DiaCompartido, Reaccion, Seguimiento
 
 # La Comunidad muestra los días de las últimas dos semanas
 DIAS_EN_EL_FEED = 14
@@ -24,20 +24,11 @@ DIAS_EN_EL_FEED = 14
 # --- Ayudas ---
 
 
-def bloqueados(usuario):
-    """Ids de las personas con las que hay un bloqueo, en cualquier dirección."""
-    yo_bloquee = Bloqueo.objects.filter(bloqueador=usuario).values_list("bloqueado_id", flat=True)
-    me_bloquearon = Bloqueo.objects.filter(bloqueado=usuario).values_list("bloqueador_id", flat=True)
-    return set(yo_bloquee) | set(me_bloquearon)
-
-
 def persona(request, nombre_usuario):
-    """El dueño de un @usuario. 404 si no existe o si esa persona te bloqueó."""
+    """El dueño de un @usuario (404 si no existe)."""
     perfil = get_object_or_404(
         Perfil.objects.select_related("usuario"), nombre_usuario=nombre_usuario.lower()
     )
-    if Bloqueo.objects.filter(bloqueador=perfil.usuario, bloqueado=request.user).exists():
-        raise Http404
     return perfil.usuario
 
 
@@ -64,14 +55,12 @@ def perfil_publico(request, nombre_usuario):
     dueno = persona(request, nombre_usuario)
     if dueno == request.user:
         return redirect("perfil")
-    yo_bloquee = Bloqueo.objects.filter(bloqueador=request.user, bloqueado=dueno).exists()
     return render(
         request,
         "perfiles/perfil.html",
         {
             **datos_de_perfil(dueno),
             "es_mio": False,
-            "yo_bloquee": yo_bloquee,
             "sigo": Seguimiento.objects.filter(seguidor=request.user, seguido=dueno).exists(),
             "me_sigue": Seguimiento.objects.filter(seguidor=dueno, seguido=request.user).exists(),
         },
@@ -83,7 +72,7 @@ def perfil_publico(request, nombre_usuario):
 def seguir(request, nombre_usuario):
     """Seguir o, si ya la seguías, dejar de seguir."""
     dueno = persona(request, nombre_usuario)
-    if dueno == request.user or dueno.pk in bloqueados(request.user):
+    if dueno == request.user:
         raise Http404
     seguimiento = Seguimiento.objects.filter(seguidor=request.user, seguido=dueno).first()
     if seguimiento:
@@ -94,57 +83,17 @@ def seguir(request, nombre_usuario):
     return volver_a(request, reverse("perfil_publico", args=[dueno.perfil.nombre_usuario]))
 
 
-@login_required(redirect_field_name=None)
-@require_POST
-def bloquear(request, nombre_usuario):
-    """Bloquear (deja de seguirse en las dos direcciones) o desbloquear."""
-    dueno = persona(request, nombre_usuario)
-    if dueno == request.user:
-        raise Http404
-    bloqueo = Bloqueo.objects.filter(bloqueador=request.user, bloqueado=dueno).first()
-    if bloqueo:
-        bloqueo.delete()
-    else:
-        Bloqueo.objects.create(bloqueador=request.user, bloqueado=dueno)
-        Seguimiento.objects.filter(
-            Q(seguidor=request.user, seguido=dueno) | Q(seguidor=dueno, seguido=request.user)
-        ).delete()
-    return redirect("perfil_publico", nombre_usuario=dueno.perfil.nombre_usuario)
-
-
-@login_required
-def reportar(request, nombre_usuario):
-    dueno = persona(request, nombre_usuario)
-    if dueno == request.user:
-        raise Http404
-    enviado = False
-    if request.method == "POST" and request.POST.get("motivo") in Reporte.MOTIVOS:
-        Reporte.objects.create(
-            reportante=request.user,
-            reportado=dueno,
-            motivo=request.POST["motivo"],
-            detalle=request.POST.get("detalle", "").strip()[:1000],
-        )
-        enviado = True
-    return render(
-        request,
-        "social/reportar.html",
-        {"dueno": dueno, "motivos": Reporte.MOTIVOS, "enviado": enviado},
-    )
-
-
 @login_required
 def lista_de_personas(request, nombre_usuario, quienes):
     """Seguidores de alguien, o a quiénes sigue."""
     dueno = persona(request, nombre_usuario)
-    ocultos = bloqueados(request.user)
     if quienes == "seguidores":
         relacion = Seguimiento.objects.filter(seguido=dueno).select_related("seguidor__perfil")
-        personas = [s.seguidor for s in relacion if s.seguidor_id not in ocultos]
+        personas = [s.seguidor for s in relacion]
         titulo = "Seguidores"
     else:
         relacion = Seguimiento.objects.filter(seguidor=dueno).select_related("seguido__perfil")
-        personas = [s.seguido for s in relacion if s.seguido_id not in ocultos]
+        personas = [s.seguido for s in relacion]
         titulo = "Sigue a"
     return render(
         request,
@@ -174,7 +123,6 @@ def buscar(request):
                 | Q(usuario__last_name__icontains=texto)
             )
             .exclude(usuario=request.user)
-            .exclude(usuario_id__in=bloqueados(request.user))
             .select_related("usuario")[:20]
         )
         personas = marcar_seguidos(request.user, con_foto([p.usuario for p in encontrados]))
@@ -187,7 +135,7 @@ def buscar(request):
 def visibles_para(usuario):
     """De quiénes ve tarjetas: las personas que sigue, y las propias."""
     siguiendo = set(Seguimiento.objects.filter(seguidor=usuario).values_list("seguido_id", flat=True))
-    return (siguiendo | {usuario.pk}) - bloqueados(usuario)
+    return siguiendo | {usuario.pk}
 
 
 def armar_tarjetas(usuario, dias):
@@ -321,8 +269,7 @@ def animar(request, pk):
 @login_required
 def avisos(request):
     lista = list(
-        request.user.avisos.exclude(actor_id__in=bloqueados(request.user))
-        .select_related("actor__perfil", "dia")[:50]
+        request.user.avisos.select_related("actor__perfil", "dia")[:50]
     )
     # Se ven como "nuevos" esta vez y quedan leídos
     request.user.avisos.filter(leido=False).update(leido=True)

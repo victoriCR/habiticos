@@ -6,7 +6,7 @@ from django.utils import timezone
 from apps.habitos.models import Habito, Registro
 from apps.perfiles.models import Perfil
 from apps.pruebas import crear_usuaria
-from apps.social.models import Aviso, Bloqueo, DiaCompartido, Reaccion, Reporte, Seguimiento
+from apps.social.models import Aviso, DiaCompartido, Reaccion, Seguimiento
 
 
 def con_usuario(username, nombre_usuario=None, **datos):
@@ -65,35 +65,6 @@ class PerfilesYSeguirTests(TestCase):
     def test_buscar_no_muestra_a_quien_no_eligio_usuario(self):
         crear_usuaria(username="sinusuario", first_name="Marta")
         self.assertNotContains(self.client.get("/comunidad/buscar/?q=marta"), "Marta")
-
-
-class BloquearYReportarTests(TestCase):
-    def setUp(self):
-        self.ana = con_usuario("ana")
-        self.maria = con_usuario("maria")
-        self.client.force_login(self.ana)
-
-    def test_bloquear_corta_el_seguimiento_en_las_dos_direcciones(self):
-        Seguimiento.objects.create(seguidor=self.ana, seguido=self.maria)
-        Seguimiento.objects.create(seguidor=self.maria, seguido=self.ana)
-        self.client.post("/@maria/bloquear/")
-        self.assertFalse(Seguimiento.objects.exists())
-        self.assertContains(self.client.get("/@maria/"), "Desbloquear")
-
-    def test_quien_me_bloqueo_no_ve_mi_perfil_ni_me_encuentra(self):
-        Bloqueo.objects.create(bloqueador=self.maria, bloqueado=self.ana)
-        self.assertEqual(self.client.get("/@maria/").status_code, 404)
-        self.assertNotContains(self.client.get("/comunidad/buscar/?q=maria"), "@maria")
-        self.assertEqual(self.client.post("/@maria/seguir/").status_code, 404)
-
-    def test_reportar(self):
-        respuesta = self.client.post("/@maria/reportar/", {"motivo": "ofensivo", "detalle": "x"})
-        self.assertContains(respuesta, "Gracias por avisar")
-        self.assertTrue(Reporte.objects.filter(reportado=self.maria, motivo="ofensivo").exists())
-
-    def test_un_motivo_inventado_no_se_guarda(self):
-        self.client.post("/@maria/reportar/", {"motivo": "inventado"})
-        self.assertFalse(Reporte.objects.exists())
 
 
 class ComunidadTests(TestCase):

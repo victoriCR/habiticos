@@ -1426,50 +1426,6 @@ a.perfil {
     color: var(--texto);
 }
 
-/* Perfil de otra persona: menú ⋯ (Reportar, Bloquear) */
-.menu-perfil {
-    position: relative;
-}
-
-.menu-perfil summary {
-    list-style: none;
-}
-
-.menu-perfil summary::-webkit-details-marker {
-    display: none;
-}
-
-.menu-perfil-opciones {
-    position: absolute;
-    right: 0;
-    z-index: 5;
-    display: grid;
-    min-width: 160px;
-    margin-top: 6px;
-    padding: 6px;
-    border: 1px solid var(--borde);
-    border-radius: 12px;
-    background: var(--superficie);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
-}
-
-.menu-perfil-opciones a,
-.menu-perfil-opciones button {
-    padding: 10px 12px;
-    border: none;
-    border-radius: 8px;
-    background: none;
-    color: var(--texto);
-    font: inherit;
-    text-align: left;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.menu-perfil-opciones button {
-    color: var(--error);
-}
-
 a.dato {
     color: var(--texto);
     text-decoration: none;
@@ -1484,9 +1440,6 @@ a.dato {
     color: var(--suave);
 }
 
-.bloqueado-aviso {
-    margin-top: 20px;
-}
 
 /* Aviso de éxito (por ejemplo, "Enviamos una notificación de prueba") */
 .aviso-ok {

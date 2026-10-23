@@ -35,46 +35,6 @@ class Seguimiento(models.Model):
         return f"{self.seguidor} → {self.seguido}"
 
 
-class Bloqueo(models.Model):
-    """`bloqueador` no quiere ver ni ser visto por `bloqueado`."""
-
-    bloqueador = models.ForeignKey(USUARIO, on_delete=models.CASCADE, related_name="bloqueos")
-    bloqueado = models.ForeignKey(USUARIO, on_delete=models.CASCADE, related_name="bloqueado_por")
-    creado = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["bloqueador", "bloqueado"], name="bloquear_una_vez"),
-        ]
-
-    def __str__(self):
-        return f"{self.bloqueador} ⊘ {self.bloqueado}"
-
-
-class Reporte(models.Model):
-    """Un aviso a la administración sobre un perfil (se revisa en /admin/)."""
-
-    MOTIVOS = {
-        "ofensivo": "Contenido ofensivo",
-        "suplantacion": "Se hace pasar por otra persona",
-        "spam": "Spam o cuenta falsa",
-        "otro": "Otro motivo",
-    }
-
-    reportante = models.ForeignKey(USUARIO, on_delete=models.CASCADE, related_name="reportes_hechos")
-    reportado = models.ForeignKey(USUARIO, on_delete=models.CASCADE, related_name="reportes_recibidos")
-    motivo = models.CharField(max_length=20, choices=MOTIVOS)
-    detalle = models.TextField(blank=True)
-    revisado = models.BooleanField(default=False)
-    creado = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["revisado", "-creado"]
-
-    def __str__(self):
-        return f"{self.reportado} ({self.get_motivo_display()})"
-
-
 class DiaCompartido(models.Model):
     """La tarjeta de la Comunidad: el día de una persona (sus habiticos públicos cumplidos).
 

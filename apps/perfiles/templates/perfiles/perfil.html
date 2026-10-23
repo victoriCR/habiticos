@@ -34,7 +34,7 @@
                                     data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'perfil_publico' perfil.nombre_usuario %}">Compartir</button>
                         {% endif %}
                     </div>
-                {% elif not yo_bloquee %}
+                {% else %}
                     <div class="perfil-acciones">
                         <form method="post" action="{% url 'seguir' perfil.nombre_usuario %}">
                             {% csrf_token %}
@@ -44,30 +44,10 @@
                                 <button class="boton principal editar-perfil" type="submit">Seguir</button>
                             {% endif %}
                         </form>
-                        {# Lo que casi nunca se usa, guardado en un menú #}
-                        <details class="menu-perfil">
-                            <summary class="boton editar-perfil" aria-label="Más opciones">⋯</summary>
-                            <div class="menu-perfil-opciones">
-                                <a href="{% url 'reportar' perfil.nombre_usuario %}">Reportar</a>
-                                <form method="post" action="{% url 'bloquear' perfil.nombre_usuario %}">
-                                    {% csrf_token %}
-                                    <button type="submit">Bloquear</button>
-                                </form>
-                            </div>
-                        </details>
                     </div>
                 {% endif %}
             </header>
 
-            {% if yo_bloquee %}
-                <div class="aviso aviso-peligro bloqueado-aviso">
-                    <p>Bloqueaste a esta persona: no ve tu perfil ni tus días, y vos no ves los suyos.</p>
-                    <form method="post" action="{% url 'bloquear' perfil.nombre_usuario %}">
-                        {% csrf_token %}
-                        <button class="boton" type="submit">Desbloquear</button>
-                    </form>
-                </div>
-            {% else %}
                 <div class="datos-perfil">
                     <div class="dato">
                         <strong>{{ publicos|length }}</strong>
@@ -125,7 +105,6 @@
                         <p class="suave">Todavía no tiene habiticos públicos.</p>
                     {% endif %}
                 {% endfor %}
-            {% endif %}
         </div>
     </div>
 {% endblock %}

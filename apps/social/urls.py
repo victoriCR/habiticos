@@ -11,8 +11,6 @@ urlpatterns = [
     # Perfiles: habiticos.com/@usuario
     path("@<str:nombre_usuario>/", views.perfil_publico, name="perfil_publico"),
     path("@<str:nombre_usuario>/seguir/", views.seguir, name="seguir"),
-    path("@<str:nombre_usuario>/bloquear/", views.bloquear, name="bloquear"),
-    path("@<str:nombre_usuario>/reportar/", views.reportar, name="reportar"),
     path(
         "@<str:nombre_usuario>/seguidores/",
         views.lista_de_personas,

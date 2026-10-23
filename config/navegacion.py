@@ -17,7 +17,6 @@ SECCIONES = {
     "perfil_publico": "comunidad",
     "seguidores": "comunidad",
     "siguiendo": "comunidad",
-    "reportar": "comunidad",
     "identidades": "identidades",
     "perfil": "perfil",
     "editar_perfil": "perfil",
