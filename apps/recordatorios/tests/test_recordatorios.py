@@ -224,6 +224,50 @@ class PaginaRecordatoriosTests(TestCase):
         self.client.post("/recordatorios/desuscribir/", json.dumps({"endpoint": datos["endpoint"]}), content_type="application/json")
         self.assertEqual(self.ana.suscripciones.count(), 0)
 
+    def suscribir(self, endpoint="https://push.ejemplo.com/abc", **extra):
+        datos = {"endpoint": endpoint, "keys": {"p256dh": "x", "auth": "y"}, **extra}
+        return self.client.post("/recordatorios/suscribir/", json.dumps(datos), content_type="application/json")
+
+    def test_guarda_si_es_celular_o_computadora(self):
+        self.suscribir(tipo="computadora", nombre="Mac · Chrome")
+        suscripcion = self.ana.suscripciones.get()
+        self.assertEqual((suscripcion.tipo, suscripcion.nombre), ("computadora", "Mac · Chrome"))
+        # Si el navegador manda cualquier cosa, queda "dispositivo"
+        self.suscribir(endpoint="https://push.ejemplo.com/otro", tipo="heladera")
+        self.assertEqual(self.ana.suscripciones.get(endpoint__endswith="otro").tipo, "dispositivo")
+
+    def test_la_pagina_lista_donde_estan_activos(self):
+        self.suscribir(tipo="celular", nombre="iPhone · app")
+        self.suscribir(endpoint="https://push.ejemplo.com/mac", tipo="computadora", nombre="Mac · Chrome")
+        respuesta = self.client.get("/recordatorios/")
+        self.assertContains(respuesta, "Dónde están activos")
+        self.assertContains(respuesta, "iPhone · app")
+        self.assertContains(respuesta, "📱")
+        self.assertContains(respuesta, "💻")
+        self.assertNotContains(respuesta, "push.ejemplo.com")  # la dirección no se muestra
+
+    def test_completar_tipo_al_abrir_la_pagina_sin_volver_a_crear(self):
+        self.suscribir()
+        self.assertEqual(self.suscribir(tipo="celular", solo_actualizar=True).status_code, 204)
+        self.assertEqual(self.ana.suscripciones.get().tipo, "celular")
+        # Quitado desde otro dispositivo: no se vuelve a crear
+        self.ana.suscripciones.all().delete()
+        self.assertEqual(self.suscribir(tipo="celular", solo_actualizar=True).status_code, 404)
+        self.assertFalse(self.ana.suscripciones.exists())
+
+    def test_quitar_un_dispositivo(self):
+        self.suscribir()
+        suscripcion = self.ana.suscripciones.get()
+        self.client.post(f"/recordatorios/dispositivos/{suscripcion.pk}/quitar/")
+        self.assertFalse(self.ana.suscripciones.exists())
+
+    def test_no_se_puede_quitar_el_de_otra_persona(self):
+        maria = crear_usuaria(username="maria")
+        ajena = suscripcion_de_prueba(maria)
+        respuesta = self.client.post(f"/recordatorios/dispositivos/{ajena.pk}/quitar/")
+        self.assertEqual(respuesta.status_code, 404)
+        self.assertTrue(maria.suscripciones.exists())
+
     def test_suscripcion_invalida(self):
         respuesta = self.client.post("/recordatorios/suscribir/", json.dumps({"endpoint": "http://malo"}), content_type="application/json")
         self.assertEqual(respuesta.status_code, 400)

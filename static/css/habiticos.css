@@ -1660,3 +1660,26 @@ a.dato {
         display: flex;
     }
 }
+
+/* Recordatorios: dónde están activos (📱 iPhone · app, 💻 Mac · Chrome…) */
+.dispositivos {
+    display: grid;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.dispositivos li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dispositivos .mini-texto {
+    flex: 1;
+}
+
+.dispositivo-icono {
+    font-size: 1.4rem;
+}

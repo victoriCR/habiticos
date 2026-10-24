@@ -7,4 +7,5 @@ urlpatterns = [
     path("suscribir/", views.suscribir, name="suscribir"),
     path("desuscribir/", views.desuscribir, name="desuscribir"),
     path("probar/", views.probar, name="probar_recordatorio"),
+    path("dispositivos/<int:pk>/quitar/", views.quitar_dispositivo, name="quitar_dispositivo"),
 ]

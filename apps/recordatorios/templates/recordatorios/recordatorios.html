@@ -6,25 +6,25 @@
 {% block contenido %}
     <div class="columna">
         <h1>🔔 Recordatorios</h1>
-        <p class="suave">Avisos en tu teléfono para no cortar tus rachas.</p>
+        <p class="suave">Avisos en tu celular o computadora para no cortar tus rachas.</p>
 
         {% if not activos %}
             <div class="vacio-grupo">Los recordatorios todavía no están disponibles en este servidor.</div>
         {% else %}
             {% if prueba %}
                 <p class="aviso aviso-ok" role="status">
-                    {% if prueba == "0" %}No encontramos ningún teléfono activo: activá los recordatorios abajo.{% else %}Enviamos una notificación de prueba. 🌱{% endif %}
+                    {% if prueba == "0" %}No encontramos ningún dispositivo activo: activá los recordatorios abajo.{% else %}Enviamos una notificación de prueba. 🌱{% endif %}
                 </p>
             {% endif %}
 
-            {# Lo maneja static/js/recordatorios.js: depende de este teléfono #}
+            {# Lo maneja static/js/recordatorios.js: depende de este dispositivo ("celular" o "computadora" según lo que detecte) #}
             <section class="grupo" id="este-dispositivo" data-clave="{{ clave_publica }}"
                      data-suscribir="{% url 'suscribir' %}" data-desuscribir="{% url 'desuscribir' %}">
-                <header class="grupo-encabezado"><h2>En este teléfono</h2></header>
+                <header class="grupo-encabezado"><h2 id="titulo-dispositivo">En este dispositivo</h2></header>
                 <p class="suave" id="estado-dispositivo">Revisando…</p>
                 <div class="acciones">
                     <button class="boton principal" type="button" id="activar" hidden>Activar recordatorios</button>
-                    <button class="boton" type="button" id="desactivar" hidden>Desactivar en este teléfono</button>
+                    <button class="boton" type="button" id="desactivar" hidden>Desactivar en este dispositivo</button>
                 </div>
             </section>
 
@@ -64,9 +64,25 @@
                 </form>
             </section>
 
-            {% if dispositivos %}
+            {% if dispositivos.exists %}
                 <section class="grupo">
-                    <p class="suave">Tenés los recordatorios activos en {{ dispositivos }} teléfono{{ dispositivos|pluralize }} o navegador{{ dispositivos|pluralize:"es" }}.</p>
+                    <header class="grupo-encabezado"><h2>Dónde están activos</h2></header>
+                    <ul class="dispositivos">
+                        {% for d in dispositivos %}
+                            <li data-huella="{{ d.huella }}">
+                                <span class="dispositivo-icono" aria-hidden="true">{{ d.icono }}</span>
+                                <span class="mini-texto">
+                                    <strong>{{ d.nombre|default:d.get_tipo_display }}<span class="este" hidden> · este</span></strong>
+                                    <span>{{ d.get_tipo_display }} · desde el {{ d.creado|date:"j \d\e F" }}</span>
+                                </span>
+                                {# El de este dispositivo se apaga con "Desactivar" (arriba); el script esconde este botón #}
+                                <form method="post" action="{% url 'quitar_dispositivo' d.pk %}">
+                                    {% csrf_token %}
+                                    <button class="lateral mini-boton" type="submit">Quitar</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
                     <form method="post" action="{% url 'probar_recordatorio' %}">
                         {% csrf_token %}
                         <button class="boton" type="submit">Enviar una prueba</button>

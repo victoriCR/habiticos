@@ -1,3 +1,4 @@
+import hashlib
 from datetime import time
 
 from django.conf import settings
@@ -7,17 +8,26 @@ USUARIO = settings.AUTH_USER_MODEL
 
 
 class Suscripcion(models.Model):
-    """Un teléfono (o navegador) que aceptó recibir notificaciones.
+    """Un celular o computadora (un navegador) que aceptó recibir notificaciones.
 
     Los datos los da el propio navegador al aceptar; con ellos se le puede enviar
     una notificación a través del servicio de Apple o Google.
     """
+
+    CELULAR = "celular"
+    COMPUTADORA = "computadora"
+    DISPOSITIVO = "dispositivo"  # tablet, o cuando no se puede saber
+    TIPOS = [(CELULAR, "Celular"), (COMPUTADORA, "Computadora"), (DISPOSITIVO, "Dispositivo")]
+    ICONOS = {CELULAR: "📱", COMPUTADORA: "💻", DISPOSITIVO: "🔔"}
 
     usuario = models.ForeignKey(USUARIO, on_delete=models.CASCADE, related_name="suscripciones")
     endpoint = models.CharField(max_length=1000, unique=True)
     p256dh = models.CharField(max_length=200)
     auth = models.CharField(max_length=100)
     creado = models.DateTimeField(auto_now_add=True)
+    # Lo detecta el navegador al activar (ver static/js/recordatorios.js)
+    tipo = models.CharField(max_length=12, choices=TIPOS, default=DISPOSITIVO)
+    nombre = models.CharField(max_length=60, blank=True)  # "iPhone · app", "Mac · Chrome"
 
     class Meta:
         verbose_name = "suscripción"
@@ -25,6 +35,19 @@ class Suscripcion(models.Model):
 
     def __str__(self):
         return f"{self.usuario} · {self.endpoint[:40]}…"
+
+    @property
+    def icono(self):
+        return self.ICONOS.get(self.tipo, "🔔")
+
+    @property
+    def huella(self):
+        """Un resumen del endpoint: así la página reconoce "este" sin mostrar la dirección."""
+        return huella(self.endpoint)
+
+
+def huella(endpoint):
+    return hashlib.sha256(endpoint.encode()).hexdigest()[:16]
 
 
 class Ajustes(models.Model):
