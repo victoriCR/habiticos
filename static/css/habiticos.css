@@ -65,6 +65,11 @@ body {
     max-width: 560px;
 }
 
+/* El calendario de un habitico sí usa todo el ancho (en el celular no cambia nada) */
+.columna.ancha {
+    max-width: none;
+}
+
 /* Título a la izquierda, botón a la derecha */
 .encabezado {
     display: flex;
@@ -1682,4 +1687,17 @@ a.dato {
 
 .dispositivo-icono {
     font-size: 1.4rem;
+}
+
+/* Calendario de un habitico en computadora: con todo el ancho, las casillas cuadradas
+   quedarían enormes; mejor rectángulos de alto fijo, como un calendario de pared */
+@media (min-width: 721px) {
+    .columna.ancha .celda {
+        aspect-ratio: auto;
+        min-height: 96px;
+    }
+
+    .columna.ancha .celda .numero {
+        font-size: 0.85rem;
+    }
 }
