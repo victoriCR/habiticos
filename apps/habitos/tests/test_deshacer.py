@@ -34,6 +34,12 @@ class DeshacerDuranteLaPrimeraHoraTests(TestCase):
         respuesta = self.hoy(14, 10)
         self.assertContains(respuesta, "Tocá para deshacer · hasta las 2:50 p.m.")
         self.assertNotContains(respuesta, CONFIRMADO)
+        # La barrita: a las 2:10 quedan 40 minutos (2/3 de la hora)
+        self.assertContains(respuesta, 'style="--parte: 0.6667; --segundos: 2400s"')
+
+    def test_pasada_la_hora_no_hay_barrita(self):
+        self.marcar(13, 50)
+        self.assertNotContains(self.hoy(14, 50), 'class="cuenta-atras"')
 
     def test_durante_la_primera_hora_se_puede_deshacer(self):
         self.marcar(13, 50)

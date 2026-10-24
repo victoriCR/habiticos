@@ -62,5 +62,11 @@
             });
         });
         document.getElementById("confirmado-entendido").addEventListener("click", () => dialogo.close());
+
+        // Cuando termina la hora para deshacer, se recarga: el habitico queda confirmado
+        const segundos = [...document.querySelectorAll(".cuenta-atras")].map((b) => Number(b.dataset.segundos));
+        if (segundos.length) {
+            setTimeout(() => location.reload(), (Math.min(...segundos) + 2) * 1000);
+        }
     </script>
 {% endblock %}

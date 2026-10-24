@@ -3,14 +3,16 @@
     <form method="post" action="{% url 'marcar_habito' habito.pk %}">
         {% csrf_token %}
         {# Confirmado (marcado hace más de 1 hora) o fuera de su franja: al tocarlo, un recuadro explica por qué (sin JavaScript, el servidor avisa) #}
-        <button class="habito{% if habito.hecho %} hecho{% endif %}{% if habito.confirmado %} confirmado{% endif %}{% if habito.bloqueado %} bloqueado{% endif %}"{% if habito.por_que_no %} data-nombre="{{ habito.nombre }}" data-mensaje="{{ habito.por_que_no }}"{% endif %} type="submit" aria-pressed="{{ habito.hecho|yesno:'true,false' }}">
+        <button class="habito{% if habito.hecho %} hecho{% endif %}{% if habito.confirmado %} confirmado{% endif %}{% if habito.bloqueado %} bloqueado{% endif %}{% if habito.deshacer_hasta %} deshaciendo{% endif %}"{% if habito.por_que_no %} data-nombre="{{ habito.nombre }}" data-mensaje="{{ habito.por_que_no }}"{% endif %} type="submit" aria-pressed="{{ habito.hecho|yesno:'true,false' }}">
             <span class="marca">{% if habito.hecho %}✓{% endif %}</span>
             <span class="nombre">{{ habito.nombre }}</span>
             {% if habito.hecho and habito.marcado_hoy %}
                 <span class="hora">{{ habito.marcado_hoy|date:"g:i a" }}</span>
             {% endif %}
             {% if habito.deshacer_hasta %}
-                <span class="deshacer">Tocá para deshacer · hasta las {{ habito.deshacer_hasta|time:"g:i a" }}</span>
+                <span class="deshacer">↩ Tocá para deshacer · hasta las {{ habito.deshacer_hasta|time:"g:i a" }}</span>
+                {# Barrita que se vacía durante la hora para deshacer #}
+                <span class="cuenta-atras" aria-hidden="true" data-segundos="{{ habito.segundos_para_deshacer }}" style="--parte: {{ habito.parte_para_deshacer }}; --segundos: {{ habito.segundos_para_deshacer }}s"></span>
             {% endif %}
             {% if habito.tiene_franja and not habito.hecho %}
                 <span class="franja" title="Solo se puede marcar en este horario">🕐 {{ habito.hora_desde|time:"g:i a" }} – {{ habito.hora_hasta|time:"g:i a" }}</span>

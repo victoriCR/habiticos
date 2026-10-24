@@ -22,7 +22,7 @@ from .calendario import (
     semanas_del_mes,
 )
 from .forms import HabitoForm
-from .models import DIAS_EN_PAPELERA, Habito, Registro
+from .models import DIAS_EN_PAPELERA, MARGEN_PARA_DESHACER, Habito, Registro
 from .rachas import calcular_racha, estadisticas
 
 
@@ -108,6 +108,12 @@ def inicio(request):
             registro.deshacer_hasta if registro and registro.se_puede_deshacer() else None
         )
         habito.confirmado = habito.hecho and habito.deshacer_hasta is None
+        if habito.deshacer_hasta:
+            # Para la barrita que se vacía: cuánto falta (en segundos y en fracción de la hora).
+            # Como texto, para que no salga "0,5" con coma decimal
+            quedan = max((habito.deshacer_hasta - ahora).total_seconds(), 0)
+            habito.segundos_para_deshacer = f"{quedan:.0f}"
+            habito.parte_para_deshacer = f"{quedan / MARGEN_PARA_DESHACER.total_seconds():.4f}"
         # Fuera de su franja no se puede marcar
         habito.bloqueado = not habito.hecho and not habito.en_franja(ahora.time())
         # Lo que explica el recuadro al tocar uno confirmado o fuera de su franja
