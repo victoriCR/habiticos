@@ -33,8 +33,8 @@ class FranjaHorariaFormTests(TestCase):
         self.assertIn("hora_hasta", form.errors)
 
 
-# El botón del habitico sin marcar y desactivado (no basta "disabled": también sale en el CSS)
-BOTON_BLOQUEADO = 'aria-pressed="false" disabled>'
+# El botón del habitico fuera de su franja (se ve apagado; al tocarlo, explica por qué)
+BOTON_BLOQUEADO = 'class="habito bloqueado"'
 
 
 class FranjaHorariaMarcarTests(TestCase):
@@ -78,6 +78,16 @@ class FranjaHorariaMarcarTests(TestCase):
             respuesta = self.client.get("/")
         self.assertContains(respuesta, BOTON_BLOQUEADO)
         self.assertContains(respuesta, "🕐 10:00 a.m. – 5:00 p.m.")
+        self.assertContains(respuesta, 'data-mensaje="🕐 Todavía no es la hora: se puede marcar de 10:00 a.m. a 5:00 p.m."')
+
+    def test_despues_de_la_franja_explica_que_ya_termino(self):
+        with mock.patch("django.utils.timezone.now", return_value=a_las(18, 0)):
+            respuesta = self.client.get("/")
+        self.assertContains(respuesta, BOTON_BLOQUEADO)
+        self.assertContains(
+            respuesta,
+            "🕐 La franja de hoy ya terminó: se podía marcar de 10:00 a.m. a 5:00 p.m. Mañana podés de nuevo.",
+        )
 
     def test_inicio_no_lo_bloquea_dentro_de_la_franja(self):
         with mock.patch("django.utils.timezone.now", return_value=a_las(12, 0)):

@@ -39,7 +39,7 @@
         </section>
     {% endfor %}
 
-    {# Al tocar un habitico confirmado: por qué ya no se puede deshacer #}
+    {# Al tocar un habitico confirmado o fuera de su franja: por qué no se puede #}
     <dialog class="dialogo" id="dialogo-confirmado" aria-labelledby="confirmado-titulo">
         <h2 id="confirmado-titulo">{{ hoy|date:"l j \d\e F"|capfirst }}</h2>
         <p class="suave" id="confirmado-nombre"></p>
@@ -53,7 +53,7 @@
 {% block scripts %}
     <script>
         const dialogo = document.getElementById("dialogo-confirmado");
-        document.querySelectorAll(".habito.confirmado").forEach((boton) => {
+        document.querySelectorAll(".habito[data-mensaje]").forEach((boton) => {
             boton.addEventListener("click", (evento) => {
                 evento.preventDefault();  // no se envía: solo se explica
                 document.getElementById("confirmado-nombre").textContent = boton.dataset.nombre;

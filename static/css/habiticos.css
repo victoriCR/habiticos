@@ -557,13 +557,13 @@ h1 {
     border-color: var(--suave);
 }
 
-/* Fuera de su franja horaria: no se puede marcar */
-.habito:disabled {
-    cursor: not-allowed;
+/* Fuera de su franja horaria: no se puede marcar (al tocarlo, un recuadro explica por qué) */
+.habito.bloqueado {
+    cursor: help;
     opacity: 0.55;
 }
 
-.habito:disabled:hover {
+.habito.bloqueado:hover {
     border-color: var(--borde);
 }
 

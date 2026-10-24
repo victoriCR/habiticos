@@ -108,10 +108,15 @@ def inicio(request):
             registro.deshacer_hasta if registro and registro.se_puede_deshacer() else None
         )
         habito.confirmado = habito.hecho and habito.deshacer_hasta is None
-        # Lo que explica el recuadro al tocar uno confirmado (igual que en el calendario)
-        habito.por_que_no = por_que_no_se_cambia(registro, True) if habito.confirmado else ""
         # Fuera de su franja no se puede marcar
         habito.bloqueado = not habito.hecho and not habito.en_franja(ahora.time())
+        # Lo que explica el recuadro al tocar uno confirmado o fuera de su franja
+        if habito.confirmado:
+            habito.por_que_no = por_que_no_se_cambia(registro, True)
+        elif habito.bloqueado:
+            habito.por_que_no = fuera_de_la_franja(habito, ahora.time())
+        else:
+            habito.por_que_no = ""
 
     # Cada hábito cumplido es un voto por su identidad (James Clear)
     lunes = hoy - timedelta(days=hoy.weekday())
@@ -425,6 +430,11 @@ def calendario_habito(request, pk):
     )
 
 
+def con_punto(texto):
+    """Le pone punto final, salvo que ya lo tenga (como "5:00 p.m.")."""
+    return texto if texto.endswith(".") else texto + "."
+
+
 def por_que_no_se_cambia(registro, es_hoy_o_ayer):
     """El texto para un día marcado que ya no se puede cambiar ("" si se puede, o si no está marcado)."""
     if registro is None or (es_hoy_o_ayer and registro.se_puede_deshacer()):
@@ -434,11 +444,18 @@ def por_que_no_se_cambia(registro, es_hoy_o_ayer):
         if registro.marcado
         else "✓ Cumplido"
     )
-    if not marcado.endswith("."):  # "p.m." ya termina en punto
-        marcado += "."
+    marcado = con_punto(marcado)
     if es_hoy_o_ayer:
         return f"{marcado} Ya está confirmado: solo se puede cambiar o deshacer durante la primera hora."
     return f"{marcado} Solo se pueden cambiar hoy y ayer."
+
+
+def fuera_de_la_franja(habito, hora):
+    """El texto para un habitico que todavía no, o ya no, se puede marcar hoy."""
+    franja = f"{time_format(habito.hora_desde, 'g:i a')} a {time_format(habito.hora_hasta, 'g:i a')}"
+    if hora < habito.hora_desde:
+        return con_punto(f"🕐 Todavía no es la hora: se puede marcar de {franja}")
+    return con_punto(f"🕐 La franja de hoy ya terminó: se podía marcar de {franja}") + " Mañana podés de nuevo."
 
 
 def ya_confirmado(habito):
