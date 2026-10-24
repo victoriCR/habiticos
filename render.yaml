@@ -75,14 +75,14 @@ services:
       # La tarea usa los mismos secretos que la app web
       - fromGroup: habiticos-comun
 
-  # Los recordatorios en el teléfono ("⏰ Queda 1 hora para…"): revisa cada 15 minutos
+  # Los recordatorios en el teléfono ("⏰ Queda 1 hora para…"): revisa cada minuto
   - type: cron
     name: habiticos-recordatorios
     runtime: python
     plan: starter
     region: virginia
     branch: main
-    schedule: "*/15 * * * *"
+    schedule: "* * * * *"
     buildCommand: pip install -r requirements.txt
     startCommand: python manage.py enviar_recordatorios
     envVars:
