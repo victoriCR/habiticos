@@ -23,7 +23,11 @@ load_dotenv()
 
 def lista(nombre):
     """Lee una variable de entorno con valores separados por comas."""
-    return [valor.strip() for valor in os.environ.get(nombre, "").split(",") if valor.strip()]
+    return [
+        valor.strip()
+        for valor in os.environ.get(nombre, "").split(",")
+        if valor.strip()
+    ]
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -80,6 +84,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "config.middleware.AdminSecurityMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
@@ -235,7 +240,9 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     # HSTS: el navegador recuerda que este sitio solo funciona con https
-    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30  # 30 días; se puede subir cuando todo esté estable
+    SECURE_HSTS_SECONDS = (
+        60 * 60 * 24 * 30
+    )  # 30 días; se puede subir cuando todo esté estable
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
