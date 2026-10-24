@@ -1,0 +1,12 @@
+# Correcciones propias a las traducciones de Django (tienen prioridad sobre las de Django).
+# Después de editar este archivo: python manage.py compilemessages -l es
+# (y subir también el django.mo que se genera: el servidor no tiene gettext para compilarlo)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: es\n"
+
+# Admin: la traducción de Django dice "El%(name)s" (sin espacio): "Elhabitico “Leer”…"
+#, python-format
+msgid "The %(name)s “%(obj)s” was deleted successfully."
+msgstr "El %(name)s “%(obj)s” fue eliminado con éxito."

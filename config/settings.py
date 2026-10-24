@@ -145,6 +145,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
 LANGUAGE_CODE = "es"
+# Nuestras correcciones a las traducciones de Django (ver locale/es/LC_MESSAGES/django.po)
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 TIME_ZONE = "America/Costa_Rica"
 
