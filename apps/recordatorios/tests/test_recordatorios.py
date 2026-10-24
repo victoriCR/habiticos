@@ -116,7 +116,7 @@ class EnviarTests(TestCase):
                 mock.patch("pywebpush.requests.post", return_value=respuesta) as post, \
                 mock.patch("django.utils.timezone.localtime", return_value=hace_falta):
             call_command("enviar_recordatorios", stdout=mock.Mock())
-            call_command("enviar_recordatorios", stdout=mock.Mock())  # un minuto después
+            call_command("enviar_recordatorios", stdout=mock.Mock())  # 10 minutos después
         self.assertEqual(post.call_count, 1)
         url, = post.call_args.args
         self.assertEqual(url, self.suscripcion.endpoint)

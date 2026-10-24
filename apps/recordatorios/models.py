@@ -43,7 +43,7 @@ class Ajustes(models.Model):
 
 
 class Enviado(models.Model):
-    """Un recordatorio que ya se mandó hoy (para no repetirlo cada minuto)."""
+    """Un recordatorio que ya se mandó hoy (para no repetirlo en cada revisión)."""
 
     usuario = models.ForeignKey(USUARIO, on_delete=models.CASCADE, related_name="+")
     clave = models.CharField(max_length=50)  # "franja:<id del habitico>" o "racha"

@@ -8,7 +8,7 @@ from apps.recordatorios.models import Enviado
 
 
 class Command(BaseCommand):
-    help = "Manda los recordatorios que tocan ahora (en el servidor corre cada minuto)."
+    help = "Manda los recordatorios que tocan ahora (en el servidor corre cada 10 minutos)."
 
     def handle(self, *args, **options):
         if not activos():
