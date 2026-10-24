@@ -57,11 +57,13 @@ class CuandoAvisarTests(TestCase):
         self.assertEqual(len(avisos), 1)
         usuario, clave, titulo, texto = avisos[0]
         self.assertEqual(clave, f"franja:{self.gym.pk}")
-        self.assertEqual(titulo, "⏰ Queda 1 hora para «Gym»")
-        self.assertIn("5:00 p.m.", texto)
+        self.assertEqual(titulo, "⏰ Gym")
+        self.assertEqual(texto, "Queda 1 hora. Se puede marcar hasta las 5:00 p.m.")
 
     def test_mas_tarde_dice_cuantos_minutos_quedan(self):
-        self.assertEqual(self.a_las(16, 30)[0][2], "⏰ Queda 30 minutos para «Gym»")
+        self.assertEqual(self.a_las(16, 30)[0][3], "Quedan 30 minutos. Se puede marcar hasta las 5:00 p.m.")
+        Enviado.objects.all().delete()
+        self.assertEqual(self.a_las(16, 59)[0][3], "Queda 1 minuto. Se puede marcar hasta las 5:00 p.m.")
 
     def test_antes_de_la_ultima_hora_o_despues_del_fin_no_avisa(self):
         self.assertEqual(self.a_las(15, 45), [])

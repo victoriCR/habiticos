@@ -23,6 +23,15 @@ def minutos(hora):
     return hora.hour * 60 + hora.minute
 
 
+def cuanto_queda(queda):
+    """"Queda 1 hora.", "Quedan 29 minutos." o "Queda 1 minuto." """
+    if queda > 45:
+        return "Queda 1 hora."
+    if queda == 1:
+        return "Queda 1 minuto."
+    return f"Quedan {queda} minutos."
+
+
 def pendientes(ahora):
     """Lista de (usuario, clave, título, texto) que tocan ahora y todavía no se enviaron hoy.
 
@@ -58,12 +67,13 @@ def pendientes(ahora):
             if minutos(habito.hora_desde) <= minutos(hora) < fin and minutos(hora) >= fin - 60:
                 clave = f"franja:{habito.pk}"
                 if (habito.usuario_id, clave) not in ya_enviados:
-                    queda = fin - minutos(hora)
                     resultado.append((
                         habito.usuario,
                         clave,
-                        f"⏰ Queda {'1 hora' if queda > 45 else f'{queda} minutos'} para «{habito.nombre}»",
-                        f"Se puede marcar hasta las {time_format(habito.hora_hasta, 'g:i a')}.",
+                        f"⏰ {habito.nombre}",
+                        # Sin punto final: "p.m." ya lo trae
+                        f"{cuanto_queda(fin - minutos(hora))} Se puede marcar hasta las "
+                        f"{time_format(habito.hora_hasta, 'g:i a')}",
                     ))
 
         # 🔥 Racha en riesgo: a la noche, si todavía se puede marcar
