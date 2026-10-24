@@ -70,7 +70,7 @@ def pendientes(ahora):
                     resultado.append((
                         habito.usuario,
                         clave,
-                        f"⏰ {habito.nombre}",
+                        habito.nombre,
                         # Sin punto final: "p.m." ya lo trae
                         f"{cuanto_queda(fin - minutos(hora))} Se puede marcar hasta las "
                         f"{time_format(habito.hora_hasta, 'g:i a')}",
