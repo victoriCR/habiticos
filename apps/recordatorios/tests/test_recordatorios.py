@@ -242,6 +242,8 @@ class PaginaRecordatoriosTests(TestCase):
         respuesta = self.client.get("/recordatorios/")
         self.assertContains(respuesta, "Dónde están activos")
         self.assertContains(respuesta, "iPhone · app")
+        self.assertContains(respuesta, f"desde el {timezone.localdate().day} de")
+        self.assertContains(respuesta, f"de {timezone.localdate().year}</span>")
         self.assertContains(respuesta, "📱")
         self.assertContains(respuesta, "💻")
         self.assertNotContains(respuesta, "push.ejemplo.com")  # la dirección no se muestra

@@ -73,7 +73,7 @@
                                 <span class="dispositivo-icono" aria-hidden="true">{{ d.icono }}</span>
                                 <span class="mini-texto">
                                     <strong>{{ d.nombre|default:d.get_tipo_display }}<span class="este" hidden> · este</span></strong>
-                                    <span>{{ d.get_tipo_display }} · desde el {{ d.creado|date:"j \d\e F" }}</span>
+                                    <span>{{ d.get_tipo_display }} · desde el {{ d.creado|date:"j \d\e F \d\e Y" }}</span>
                                 </span>
                                 {# El de este dispositivo se apaga con "Desactivar" (arriba); el script esconde este botón #}
                                 <form method="post" action="{% url 'quitar_dispositivo' d.pk %}">
