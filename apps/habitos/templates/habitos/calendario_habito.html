@@ -40,12 +40,12 @@
                             {% if dia.marcado %}<span class="hora-celda" title="{{ dia.marcado|time:'g:i a' }}"><span class="hora-larga">{{ dia.marcado|time:"g:i a" }}</span><span class="hora-corta">{{ dia.marcado|time:"H:i" }}</span></span>{% endif %}
                         </button>
                     {% elif dia.por_que_no %}
-                        {# Marcado pero ya no se puede cambiar: al tocarlo, se explica por qué #}
+                        {# Ya no se puede cambiar (o, hoy, todavía no empezó la franja): al tocarlo, se explica por qué #}
                         <button type="button" class="celda informativa{% if dia.hoy %} hoy{% endif %}"
                                 data-titulo="{{ dia.fecha|date:'l j \d\e F'|capfirst }}"
                                 data-mensaje="{{ dia.por_que_no }}">
                             <span class="numero">{{ dia.fecha.day }}</span>
-                            <span>✅</span>
+                            {% if dia.hecho %}<span>✅</span>{% endif %}
                             {% if dia.marcado %}<span class="hora-celda" title="{{ dia.marcado|time:'g:i a' }}"><span class="hora-larga">{{ dia.marcado|time:"g:i a" }}</span><span class="hora-corta">{{ dia.marcado|time:"H:i" }}</span></span>{% endif %}
                         </button>
                     {% else %}
@@ -125,6 +125,7 @@
 
         function abrir(celda) {
             modo(false);
+            campoHora.setCustomValidity("");
             const { fecha, titulo, hora, hecho, esHoy } = celda.dataset;
             document.getElementById("dialogo-fecha").value = fecha;
             document.getElementById("dialogo-titulo").textContent = titulo;
@@ -141,6 +142,23 @@
             botonDesmarcar.hidden = !hecho;
             dialogo.showModal();
         }
+
+        // Los avisos del selector de hora, en español (el navegador los pone en su idioma)
+        function horaLegible(valor) {
+            const [h, m] = valor.split(":").map(Number);
+            return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "a.m." : "p.m."}`;
+        }
+        campoHora.addEventListener("invalid", () => {
+            if (campoHora.validity.valueMissing) {
+                campoHora.setCustomValidity("Elegí una hora.");
+            } else if (campoHora.validity.rangeUnderflow || campoHora.validity.rangeOverflow) {
+                // Sin punto final: "p.m." ya lo trae
+                campoHora.setCustomValidity(
+                    `Elegí una hora entre las ${horaLegible(campoHora.min)} y las ${horaLegible(campoHora.max)}`
+                );
+            }
+        });
+        campoHora.addEventListener("input", () => campoHora.setCustomValidity(""));
 
         document.querySelectorAll(".celda.editable").forEach((celda) => {
             celda.addEventListener("click", () => abrir(celda));

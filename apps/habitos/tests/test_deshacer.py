@@ -127,7 +127,7 @@ class CalendarioConfirmadoTests(TestCase):
 
     def test_al_tocar_un_dia_confirmado_se_explica_por_que(self):
         self.registrar(1, 0, hora="22:00")
-        self.assertNotIn("celda informativa", self.calendario(1, 30))
+        self.assertNotIn("Ya está confirmado", self.calendario(1, 30))
         pagina = self.calendario(2, 30)
         self.assertIn("celda informativa", pagina)
         self.assertIn(

@@ -2,6 +2,7 @@ from datetime import time
 from unittest import mock
 
 from django.test import TestCase
+from django.utils import timezone
 
 from apps.habitos.forms import HabitoForm
 from apps.habitos.models import Habito
@@ -93,3 +94,29 @@ class FranjaHorariaMarcarTests(TestCase):
         with mock.patch("django.utils.timezone.now", return_value=a_las(12, 0)):
             respuesta = self.client.get("/")
         self.assertNotContains(respuesta, BOTON_BLOQUEADO)
+
+
+class CalendarioAntesDeLaFranjaTests(TestCase):
+    """Hoy, antes de que empiece la franja, el calendario explica que todavía no se puede."""
+
+    def setUp(self):
+        self.usuaria = crear_usuaria(username="ana")
+        self.client.force_login(self.usuaria)
+        self.habito = Habito.objects.create(
+            usuario=self.usuaria, nombre="Primera comida", hora_desde=time(11), hora_hasta=time(18)
+        )
+        self.hoy = timezone.localdate().isoformat()
+
+    def calendario_a_las(self, hora, minuto=0):
+        with mock.patch("django.utils.timezone.now", return_value=a_las(hora, minuto)):
+            return self.client.get(f"/habitos/{self.habito.pk}/calendario/").content.decode()
+
+    def test_antes_de_la_franja_hoy_no_se_puede_marcar(self):
+        pagina = self.calendario_a_las(0, 8)
+        self.assertNotIn(f'data-fecha="{self.hoy}"', pagina)
+        self.assertIn("🕐 Todavía no es la hora: se puede marcar de 11:00 a.m. a 6:00 p.m.", pagina)
+
+    def test_dentro_de_la_franja_hoy_si(self):
+        pagina = self.calendario_a_las(12, 0)
+        self.assertIn(f'data-fecha="{self.hoy}"', pagina)
+        self.assertNotIn("Todavía no es la hora", pagina)

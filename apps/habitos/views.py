@@ -406,6 +406,9 @@ def calendario_habito(request, pk):
     registros = {r.fecha: r for r in habito.registros.only("fecha", "marcado", "tocado")}
     marcados = {fecha: r.marcado for fecha, r in registros.items()}
     fechas = set(registros)
+    # Hoy, antes de que empiece su franja, todavía no se puede marcar a ninguna hora
+    ahora = timezone.localtime().time()
+    todavia_no = habito.tiene_franja and hoy not in registros and ahora < habito.hora_desde
 
     semanas = [
         [
@@ -415,9 +418,12 @@ def calendario_habito(request, pk):
                 "marcado": marcados.get(d),
                 # Hoy y ayer, salvo que ya estén confirmados (marcados hace más de 1 hora)
                 "editable": d in editables
-                and (d not in registros or registros[d].se_puede_deshacer()),
-                # Si está marcado pero ya no se puede cambiar: por qué (al tocarlo)
-                "por_que_no": por_que_no_se_cambia(registros.get(d), d in editables),
+                and (d not in registros or registros[d].se_puede_deshacer())
+                and not (d == hoy and todavia_no),
+                # Si ya no (o todavía no) se puede cambiar: por qué (al tocarlo)
+                "por_que_no": fuera_de_la_franja(habito, ahora)
+                if d == hoy and todavia_no
+                else por_que_no_se_cambia(registros.get(d), d in editables),
             }
             for d in semana
         ]
