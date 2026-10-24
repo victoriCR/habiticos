@@ -43,6 +43,19 @@
                             <span class="marca" aria-hidden="true"></span>
                             <span><strong>🔥 Racha en riesgo</strong> · <span class="suave-chico">A las 8 p.m., si una racha de 2 o más días está por cortarse.</span></span>
                         </label>
+                        <label class="opcion">
+                            <input type="checkbox" name="pendientes_del_dia"{% if ajustes.pendientes_del_dia %} checked{% endif %}>
+                            <span class="marca" aria-hidden="true"></span>
+                            <span><strong>📋 Habiticos sin franja</strong> · <span class="suave-chico">Un solo aviso con los que te faltan de hoy, a la hora que elijas.</span></span>
+                        </label>
+                    </div>
+                    <div class="campo">
+                        <label for="hora_pendientes">Hora del aviso de habiticos sin franja</label>
+                        <select name="hora_pendientes" id="hora_pendientes">
+                            {% for hora in horas_pendientes %}
+                                <option value="{{ hora|time:'H:i' }}"{% if hora == ajustes.hora_pendientes %} selected{% endif %}>{{ hora|time:"g:i a" }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="acciones">
                         <button class="boton principal" type="submit">Guardar</button>

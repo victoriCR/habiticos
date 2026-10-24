@@ -17,6 +17,9 @@ ANTES_DEL_FIN = timedelta(hours=1)
 HORA_RACHA = time(20, 0)
 # Solo se avisa por rachas de al menos estos días (con 1 día todavía no hay racha que perder)
 RACHA_MINIMA = 2
+# Las horas que se pueden elegir para "Te faltan N habiticos de hoy": cada media hora,
+# del mediodía a las 11:30 p.m. (caen justo en una revisión, que es cada 10 minutos)
+HORAS_PENDIENTES = [time(h, m) for h in range(12, 24) for m in (0, 30)]
 
 
 def minutos(hora):
@@ -56,6 +59,7 @@ def pendientes(ahora):
 
     resultado = []
     en_riesgo = defaultdict(list)
+    sin_marcar = defaultdict(list)
     for habito in habitos:
         if hoy in fechas[habito.pk]:
             continue  # ya está hecho hoy: nada que recordar
@@ -83,6 +87,10 @@ def pendientes(ahora):
             if todavia_se_puede and racha >= RACHA_MINIMA:
                 en_riesgo[habito.usuario].append((habito.nombre, racha))
 
+        # Los de hoy sin franja (esos no tienen aviso de "Queda 1 hora"), a la hora elegida
+        if ajuste.pendientes_del_dia and not habito.tiene_franja and hora >= ajuste.hora_pendientes:
+            sin_marcar[habito.usuario].append(habito.nombre)
+
     for usuario, lista in en_riesgo.items():
         if (usuario.pk, "racha") in ya_enviados:
             continue
@@ -93,7 +101,24 @@ def pendientes(ahora):
             else f"🔥 Todavía podés salvar {len(lista)} rachas"
         )
         resultado.append((usuario, "racha", titulo, f"Te falta marcar: {nombres}."))
+
+    for usuario, nombres in sin_marcar.items():
+        if (usuario.pk, "pendientes") in ya_enviados:
+            continue
+        titulo = (
+            "Te falta 1 habitico de hoy"
+            if len(nombres) == 1
+            else f"Te faltan {len(nombres)} habiticos de hoy"
+        )
+        resultado.append((usuario, "pendientes", titulo, f"{enumerar(nombres)}."))
     return resultado
+
+
+def enumerar(nombres):
+    """"Leer", "Leer y Meditar", "Leer, Meditar y Tomar agua"."""
+    if len(nombres) == 1:
+        return nombres[0]
+    return f"{', '.join(nombres[:-1])} y {nombres[-1]}"
 
 
 def momento_local(fecha, hora):

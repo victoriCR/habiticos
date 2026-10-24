@@ -1,3 +1,5 @@
+from datetime import time
+
 from django.conf import settings
 from django.db import models
 
@@ -33,6 +35,9 @@ class Ajustes(models.Model):
     fin_de_franja = models.BooleanField(default=True)
     # "🔥 Todavía podés salvar tu racha": a la noche, si una racha está por cortarse
     racha_en_riesgo = models.BooleanField(default=True)
+    # "Te faltan 3 habiticos de hoy": los que no tienen franja, a la hora que cada uno elija
+    pendientes_del_dia = models.BooleanField(default=True)
+    hora_pendientes = models.TimeField(default=time(21, 0))
 
     class Meta:
         verbose_name = "ajustes"

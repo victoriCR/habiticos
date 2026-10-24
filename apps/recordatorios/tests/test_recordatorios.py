@@ -102,6 +102,53 @@ class CuandoAvisarTests(TestCase):
         self.assertEqual(self.a_las(16, 15), [])
 
 
+class PendientesDelDiaTests(TestCase):
+    """Un solo aviso con los habiticos sin franja que faltan hoy, a la hora elegida (9 p.m.)."""
+
+    def setUp(self):
+        self.ana = crear_usuaria(username="ana")
+        suscripcion_de_prueba(self.ana)
+        self.hoy = timezone.localdate()
+        self.leer = Habito.objects.create(usuario=self.ana, nombre="Leer")
+        Habito.objects.create(usuario=self.ana, nombre="Meditar")
+        Habito.objects.create(usuario=self.ana, nombre="Tomar agua")
+        # Con franja: tiene su propio aviso, no entra en este
+        Habito.objects.create(usuario=self.ana, nombre="Gym", hora_desde=time(10), hora_hasta=time(17))
+
+    def a_las(self, hora, minuto=0):
+        return [a for a in pendientes(momento_local(self.hoy, time(hora, minuto))) if a[1] == "pendientes"]
+
+    def test_a_las_9_junta_los_que_faltan(self):
+        self.assertEqual(self.a_las(20, 50), [])
+        aviso, = self.a_las(21, 0)
+        self.assertEqual(aviso[2], "Te faltan 3 habiticos de hoy")
+        self.assertEqual(aviso[3], "Leer, Meditar y Tomar agua.")
+
+    def test_los_marcados_no_aparecen(self):
+        Registro.objects.create(habito=self.leer, fecha=self.hoy)
+        self.assertEqual(self.a_las(21, 0)[0][3], "Meditar y Tomar agua.")
+
+    def test_con_uno_solo(self):
+        Habito.objects.filter(nombre__in=["Meditar", "Tomar agua"]).delete()
+        aviso, = self.a_las(21, 0)
+        self.assertEqual((aviso[2], aviso[3]), ("Te falta 1 habitico de hoy", "Leer."))
+
+    def test_si_estan_todos_hechos_no_avisa(self):
+        for habito in Habito.objects.filter(hora_desde__isnull=True):
+            Registro.objects.create(habito=habito, fecha=self.hoy)
+        self.assertEqual(self.a_las(21, 0), [])
+
+    def test_a_otra_hora_o_desactivado(self):
+        Ajustes.objects.create(usuario=self.ana, hora_pendientes=time(18, 30))
+        self.assertEqual(len(self.a_las(18, 30)), 1)
+        Ajustes.objects.filter(usuario=self.ana).update(pendientes_del_dia=False)
+        self.assertEqual(self.a_las(22, 0), [])
+
+    def test_no_se_repite(self):
+        Enviado.objects.create(usuario=self.ana, clave="pendientes", fecha=self.hoy)
+        self.assertEqual(self.a_las(21, 30), [])
+
+
 class EnviarTests(TestCase):
     def setUp(self):
         self.publica, self.privada = claves_vapid()
@@ -156,6 +203,18 @@ class PaginaRecordatoriosTests(TestCase):
         ajustes = Ajustes.objects.get(usuario=self.ana)
         self.assertFalse(ajustes.fin_de_franja)
         self.assertTrue(ajustes.racha_en_riesgo)
+        self.assertFalse(ajustes.pendientes_del_dia)
+
+    def test_elegir_la_hora_del_aviso_de_pendientes(self):
+        respuesta = self.client.get("/recordatorios/")
+        self.assertContains(respuesta, '<option value="21:00" selected>9:00 p.m.</option>', html=True)
+        self.client.post("/recordatorios/", {"pendientes_del_dia": "on", "hora_pendientes": "19:30"})
+        ajustes = Ajustes.objects.get(usuario=self.ana)
+        self.assertTrue(ajustes.pendientes_del_dia)
+        self.assertEqual(ajustes.hora_pendientes, time(19, 30))
+        # Una hora que no está en la lista no se guarda
+        self.client.post("/recordatorios/", {"pendientes_del_dia": "on", "hora_pendientes": "03:17"})
+        self.assertEqual(Ajustes.objects.get(usuario=self.ana).hora_pendientes, time(19, 30))
 
     def test_suscribir_y_desuscribir_este_telefono(self):
         datos = {"endpoint": "https://push.ejemplo.com/abc", "keys": {"p256dh": "x", "auth": "y"}}

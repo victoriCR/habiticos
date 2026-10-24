@@ -903,7 +903,8 @@ h1 {
 }
 
 .campo input,
-.campo textarea {
+.campo textarea,
+.campo select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--borde);
@@ -914,7 +915,8 @@ h1 {
 }
 
 .campo input:focus,
-.campo textarea:focus {
+.campo textarea:focus,
+.campo select:focus {
     outline: 2px solid var(--texto);
     outline-offset: 1px;
 }

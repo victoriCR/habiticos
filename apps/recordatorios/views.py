@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from .enviar import activos, notificar
+from .logica import HORAS_PENDIENTES
 from .models import Ajustes, Suscripcion
 
 
@@ -16,6 +17,11 @@ def recordatorios(request):
     if request.method == "POST":
         ajustes.fin_de_franja = "fin_de_franja" in request.POST
         ajustes.racha_en_riesgo = "racha_en_riesgo" in request.POST
+        ajustes.pendientes_del_dia = "pendientes_del_dia" in request.POST
+        # Solo una de las horas de la lista (si llega otra cosa, queda la que estaba)
+        elegida = {h.strftime("%H:%M"): h for h in HORAS_PENDIENTES}.get(request.POST.get("hora_pendientes"))
+        if elegida:
+            ajustes.hora_pendientes = elegida
         ajustes.save()
         return redirect(f"{request.path}?guardado=1")
     return render(
@@ -23,6 +29,7 @@ def recordatorios(request):
         "recordatorios/recordatorios.html",
         {
             "ajustes": ajustes,
+            "horas_pendientes": HORAS_PENDIENTES,
             "activos": activos(),
             "clave_publica": settings.VAPID_PUBLIC_KEY,
             "dispositivos": request.user.suscripciones.count(),
