@@ -39,7 +39,7 @@ services:
         value: 3.14.8
       - key: DATABASE_URL
         fromDatabase:
-          name: habiticos-db-new
+          name: habiticos-db
           property: connectionString
       - fromGroup: habiticos-comun
       - key: ALLOWED_HOSTS
@@ -62,7 +62,7 @@ services:
         value: 3.14.8
       - key: DATABASE_URL
         fromDatabase:
-          name: habiticos-db-new
+          name: habiticos-db
           property: connectionString
       # La tarea usa los mismos secretos que la app web
       - fromGroup: habiticos-comun
@@ -82,6 +82,6 @@ services:
         value: 3.14.8
       - key: DATABASE_URL
         fromDatabase:
-          name: habiticos-db-new
+          name: habiticos-db
           property: connectionString
       - fromGroup: habiticos-comun
